@@ -193,3 +193,29 @@ final class RoundTripTests: XCTestCase {
         XCTAssertNotNil(JSONFormatter.validate("{nope}"))
     }
 }
+
+extension RoundTripTests {
+    func testEveryBuiltInExampleParsesAndRoundTrips() throws {
+        for example in Examples.all {
+            let request = try CurlParser.parse(example.command)
+            XCTAssertFalse(request.url.host.isEmpty, example.id)
+            let reparsed = try CurlParser.parse(CurlGenerator.generate(request, style: .multiLine))
+            XCTAssertEqual(reparsed, request, example.id)
+        }
+    }
+
+    func testEveryExplanationHasSomethingToSay() {
+        for explanation in Explanation.allCases {
+            XCTAssertFalse(explanation.title.isEmpty)
+            XCTAssertGreaterThan(explanation.text.count, 60, explanation.key)
+            XCTAssertTrue(explanation.key.hasPrefix("explanation."))
+        }
+    }
+
+    func testEveryKnownOptionExplainsItself() {
+        for spec in CurlOptionCatalog.all {
+            XCTAssertGreaterThan(spec.explanation.count, 20, spec.long)
+            XCTAssertTrue(spec.long.hasPrefix("--"), spec.long)
+        }
+    }
+}
