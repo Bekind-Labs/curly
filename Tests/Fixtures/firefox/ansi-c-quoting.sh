@@ -1,0 +1,1 @@
+curl 'https://api.example.com/v1/messages' --compressed -X POST -H 'Content-Type: application/json' -H $'Cookie: session=abc123; note=café' --data-raw $'{"text":"line one\nline two\ttabbed","who":"Ada O\'Brien"}'
