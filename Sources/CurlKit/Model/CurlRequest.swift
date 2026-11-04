@@ -129,11 +129,6 @@ public struct CurlRequest: Equatable, Sendable {
 
     // MARK: Convenience
 
-    public var isEmpty: Bool {
-        self == CurlRequest(url: URLParts(scheme: "", host: ""))
-            || (url.host.isEmpty && headers.isEmpty && bodyParts.isEmpty && options.isEmpty)
-    }
-
     /// The same request with every switched-off row removed. Generating a
     /// command throws away disabled rows, so this is what a command generated
     /// from this request parses back into.
