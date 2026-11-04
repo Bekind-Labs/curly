@@ -144,7 +144,6 @@ public enum BodyPartKind: String, CaseIterable, Sendable {
     case dataURLEncode
     case form
     case formString
-    case uploadFile
 
     public var flag: String {
         switch self {
@@ -155,7 +154,6 @@ public enum BodyPartKind: String, CaseIterable, Sendable {
         case .dataURLEncode: return "--data-urlencode"
         case .form: return "--form"
         case .formString: return "--form-string"
-        case .uploadFile: return "--upload-file"
         }
     }
 

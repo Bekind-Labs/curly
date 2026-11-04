@@ -56,7 +56,6 @@ public struct CurlRequest: Equatable, Sendable {
     public var impliedMethod: String {
         if isOptionEnabled("--head") { return "HEAD" }
         if isOptionEnabled("--get") { return "GET" }
-        if bodyParts.contains(where: { $0.isEnabled && $0.kind == .uploadFile }) { return "PUT" }
         if bodyParts.contains(where: \.isEnabled) { return "POST" }
         if isOptionEnabled("--upload-file") { return "PUT" }
         return "GET"
