@@ -204,7 +204,7 @@ public enum CurlGenerator {
 
         mutating func appendBody(_ request: CurlRequest) {
             for part in request.bodyParts where part.isEnabled {
-                argument(flag: part.kind.flag, value: part.value, ref: .bodyPart(part.id))
+                argument(flag: part.spelling, value: part.value, ref: .bodyPart(part.id))
                 if let last = segments.last {
                     segments.append(CurlScript.Segment(range: last.range, ref: .body))
                 }

@@ -166,9 +166,13 @@ extension CurlRequest {
     /// Replaces the body with a single blob of text, keeping the flag spelling
     /// that was already in use so a Chrome command stays a `--data-raw` one.
     public mutating func setBodyText(_ text: String) {
-        let kind = bodyParts.first(where: { !$0.kind.isMultipart })?.kind ?? .dataRaw
-        let existingID = bodyParts.first(where: { !$0.kind.isMultipart })?.id
-        let replacement = BodyPart(kind: kind, value: text, id: existingID ?? UUID())
+        let existing = bodyParts.first { !$0.kind.isMultipart }
+        let replacement = BodyPart(
+            kind: existing?.kind ?? .dataRaw,
+            value: text,
+            spelling: existing?.spelling,
+            id: existing?.id ?? UUID()
+        )
         bodyParts = text.isEmpty ? [] : [replacement]
     }
 

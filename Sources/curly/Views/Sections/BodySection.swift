@@ -201,7 +201,7 @@ struct BodySection: View {
                     Toggle("", isOn: $part.isEnabled)
                         .labelsHidden()
                         .help(L("row.toggle", "Include this in the request"))
-                    Text(part.kind.flag)
+                    Text(part.spelling)
                         .font(.caption.monospaced())
                         .foregroundStyle(.secondary)
                         .frame(width: 128, alignment: .leading)

@@ -157,26 +157,26 @@ public enum CurlParser {
             case "-u", "--user":
                 request.credentials = Credentials(argument: value ?? "")
             case "-d", "--data":
-                addBody(.data, value)
+                addBody(.data, value, spelling: flag)
             case "--data-raw":
-                addBody(.dataRaw, value)
+                addBody(.dataRaw, value, spelling: flag)
             case "--data-binary":
-                addBody(.dataBinary, value)
+                addBody(.dataBinary, value, spelling: flag)
             case "--data-ascii":
-                addBody(.dataAscii, value)
+                addBody(.dataAscii, value, spelling: flag)
             case "--data-urlencode":
-                addBody(.dataURLEncode, value)
+                addBody(.dataURLEncode, value, spelling: flag)
             case "-F", "--form":
-                addBody(.form, value)
+                addBody(.form, value, spelling: flag)
             case "--form-string":
-                addBody(.formString, value)
+                addBody(.formString, value, spelling: flag)
             default:
                 request.options.append(CurlOption(flag: flag, value: value))
             }
         }
 
-        mutating func addBody(_ kind: BodyPartKind, _ value: String?) {
-            request.bodyParts.append(BodyPart(kind: kind, value: value ?? ""))
+        mutating func addBody(_ kind: BodyPartKind, _ value: String?, spelling: String) {
+            request.bodyParts.append(BodyPart(kind: kind, value: value ?? "", spelling: spelling))
         }
 
         /// A `Cookie:` header is pulled out into the cookie section, because

@@ -167,16 +167,26 @@ public struct BodyPart: RowIdentified, Sendable {
     public var kind: BodyPartKind
     public var value: String
     public var isEnabled: Bool
+    /// The flag as it was written, so `-F` does not come back out as `--form`.
+    public var spelling: String
 
-    public init(kind: BodyPartKind, value: String, isEnabled: Bool = true, id: UUID = UUID()) {
+    public init(
+        kind: BodyPartKind,
+        value: String,
+        isEnabled: Bool = true,
+        spelling: String? = nil,
+        id: UUID = UUID()
+    ) {
         self.id = id
         self.kind = kind
         self.value = value
         self.isEnabled = isEnabled
+        self.spelling = spelling ?? kind.flag
     }
 
     public static func == (lhs: BodyPart, rhs: BodyPart) -> Bool {
-        lhs.kind == rhs.kind && lhs.value == rhs.value && lhs.isEnabled == rhs.isEnabled
+        lhs.kind == rhs.kind && lhs.value == rhs.value
+            && lhs.isEnabled == rhs.isEnabled && lhs.spelling == rhs.spelling
     }
 }
 
