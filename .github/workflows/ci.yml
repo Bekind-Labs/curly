@@ -48,7 +48,6 @@ jobs:
       - name: Check the string catalog is up to date
         run: |
           set -euo pipefail
-          swift build
           python3 Scripts/make-strings.py
           if ! git diff --quiet -- Sources/curly/Resources/en.lproj/Localizable.strings; then
             echo "::error::The string catalog is stale. Run 'make strings' and commit the result."

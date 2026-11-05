@@ -97,6 +97,12 @@ SwiftPM from a `Makefile` with no Xcode project. So the catalog is a plain
 checked by a test that fails if it drifts. Every user-facing string goes through
 `L("key", "English")`, so swapping in `.xcstrings` later is a mechanical change.
 
+The generator reads the Swift source as text rather than compiling anything, so
+`make strings` needs nothing but Python and works on a bare checkout. Reading
+Swift with regular expressions is only safe because `StringCatalogTests`
+compares the generated file against the real values at runtime, so a
+misparse fails the build rather than quietly shipping the wrong English.
+
 ## Fixtures are read from disk, not bundled
 
 `Tests/Fixtures/` keeps its readable per-browser layout and is loaded relative

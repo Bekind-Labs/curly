@@ -4,21 +4,44 @@
 Two kinds of entry go in:
 
 * every `L("key", "English")` call in the app's source, and
-* the explanations that live as data in CurlKit, which are dumped by compiling
-  Scripts/dump-strings.swift against the built library so the text is exact.
+* the explanations that live as data in CurlKit — the section notes and the
+  per-flag ones — read straight out of the Swift source.
 
-Run `make strings` after adding or changing a user-facing string. The test in
-Tests/CurlKitTests/StringCatalogTests.swift fails if the file drifts.
+Nothing here needs a toolchain or a build: it is text in, text out. The reading
+of the Swift source is kept honest by StringCatalogTests, which compares the
+generated file against the real values at runtime.
+
+Run `make strings` after adding or changing a user-facing string.
 """
 import glob
-import os
+import pathlib
 import re
-import subprocess
 import sys
-import tempfile
+import textwrap
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT = os.path.join(ROOT, "Sources/curly/Resources/en.lproj/Localizable.strings")
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+OUTPUT = ROOT / "Sources/curly/Resources/en.lproj/Localizable.strings"
+
+
+
+def unescape_swift(value):
+    """A one-line Swift literal's text, with its escapes resolved."""
+    return (
+        value.replace("\\\\", "\x00")
+        .replace('\\"', '"')
+        .replace("\\n", "\n")
+        .replace("\\t", "\t")
+        .replace("\x00", "\\")
+    )
+
+
+def escape_for_catalog(value):
+    """The same text, written the way a .strings file wants it."""
+    return (
+        value.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+    )
 
 # L("some.key", "Some English") — the two literals may sit on separate lines.
 STRING = r'"((?:[^"\\]|\\.)*)"'
@@ -27,51 +50,78 @@ CALL = re.compile(r"\bL\(\s*" + STRING + r"\s*,\s*" + STRING + r"\s*\)", re.S)
 
 def app_entries():
     entries = {}
-    for path in sorted(glob.glob(os.path.join(ROOT, "Sources/curly/**/*.swift"), recursive=True)):
+    for path in sorted(glob.glob(str(ROOT / "Sources/curly/**/*.swift"), recursive=True)):
         with open(path, encoding="utf-8") as handle:
             for key, value in CALL.findall(handle.read()):
-                entries.setdefault(key, value)
+                entries.setdefault(key, unescape_swift(value))
     return entries
 
 
-def curlkit_entries():
-    """Compile and run the dump tool against the already-built CurlKit."""
-    objects = sorted(glob.glob(os.path.join(ROOT, ".build/*/debug/CurlKit.build/*.o")))
-    modules = glob.glob(os.path.join(ROOT, ".build/*/debug/Modules"))
-    if not objects or not modules:
-        sys.exit("run `swift build` first: no built CurlKit found under .build/")
+def _multiline_literal(body):
+    """Reproduce a Swift \"\"\"…\"\"\" literal: dedent, and join lines whose
+    predecessor ended in a backslash without a line break."""
+    lines = textwrap.dedent(body).split("\n")
+    out = ""
+    for index, line in enumerate(lines):
+        if line.endswith("\\"):
+            out += line[:-1]
+        else:
+            out += line
+            if index != len(lines) - 1:
+                out += "\n"
+    return out
 
-    with tempfile.TemporaryDirectory() as scratch:
-        binary = os.path.join(scratch, "dump-strings")
-        subprocess.run(
-            ["swiftc", "-I", modules[0], os.path.join(ROOT, "Scripts/dump-strings.swift")]
-            + objects
-            + ["-o", binary],
-            check=True,
-        )
-        output = subprocess.run([binary], check=True, capture_output=True, text=True).stdout
+
+def explanation_entries():
+    """The per-section notes behind each "?" button."""
+    source = (ROOT / "Sources/CurlKit/Explain/Explanations.swift").read_text(encoding="utf-8")
+    entries = {}
+
+    titles = re.search(r"var title: String \{(.*?)\n    \}", source, re.S)
+    for case, title in re.findall(r"case \.(\w+): return " + STRING, titles.group(1)):
+        entries["explanation.%s.title" % case] = unescape_swift(title)
+
+    texts = re.search(r"var text: String \{(.*?)\n    \}", source, re.S)
+    for case, body in re.findall(
+        r'case \.(\w+):\s*\n\s*return """\n(.*?)\n\s*"""', texts.group(1), re.S
+    ):
+        entries["explanation.%s" % case] = _multiline_literal(body)
+
+    if not entries:
+        sys.exit("could not read any explanations out of Explanations.swift")
+    return entries
+
+
+def option_entries():
+    """One line of English per curl flag curly recognises."""
+    source = (ROOT / "Sources/CurlKit/Model/CurlOptionCatalog.swift").read_text(encoding="utf-8")
+    catalog = re.search(r"static let all: \[CurlOptionSpec\] = \[(.*?)\n    \]", source, re.S)
+    if not catalog:
+        sys.exit("could not find the option catalog in CurlOptionCatalog.swift")
 
     entries = {}
-    line_pattern = re.compile(r"^" + STRING + r" = " + STRING + r";$")
-    for line in output.splitlines():
-        match = line_pattern.match(line)
-        if match:
-            entries[match.group(1)] = match.group(2)
+    for flag, explanation in re.findall(
+        r"\.init\(long: " + STRING + r".*?explanation: " + STRING, catalog.group(1), re.S
+    ):
+        entries["option.%s" % flag] = unescape_swift(explanation)
+    if not entries:
+        sys.exit("could not read any option explanations out of CurlOptionCatalog.swift")
     return entries
 
 
 def main():
     entries = {}
-    entries.update(curlkit_entries())
+    entries.update(explanation_entries())
+    entries.update(option_entries())
     entries.update(app_entries())
 
-    os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT, "w", encoding="utf-8") as handle:
         handle.write("/* curly — English strings.\n")
         handle.write("   Generated by `make strings`; edit the source, not this file. */\n\n")
         for key in sorted(entries):
-            handle.write('"%s" = "%s";\n' % (key, entries[key]))
-    print("wrote %d strings to %s" % (len(entries), os.path.relpath(OUTPUT, ROOT)))
+            handle.write('"%s" = "%s";\n' % (key, escape_for_catalog(entries[key])))
+    print("wrote %d strings to %s" % (len(entries), OUTPUT.relative_to(ROOT)))
 
 
 if __name__ == "__main__":
