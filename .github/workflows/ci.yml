@@ -1,0 +1,175 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # CurlKit has no UI imports, so the library, its parser and the round-trip
+  # properties are checked on Linux too. This is the cheap, fast signal.
+  library:
+    name: CurlKit tests (Linux)
+    runs-on: ubuntu-latest
+    container: swift:6.0-noble
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift version
+        run: swift --version
+      - name: Test
+        run: swift test
+
+  # The only place the SwiftUI app actually compiles, and the only place the
+  # app bundle can be assembled.
+  app:
+    name: Tests and app bundle (macOS)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Swift version
+        run: swift --version
+
+      - name: Test
+        run: make test
+
+      # The catalog is generated from the source, so a stale one means a string
+      # was added without being made translatable.
+      - name: Check the string catalog is up to date
+        run: |
+          set -euo pipefail
+          swift build
+          python3 Scripts/make-strings.py
+          if ! git diff --quiet -- Sources/curly/Resources/en.lproj/Localizable.strings; then
+            echo "::error::The string catalog is stale. Run 'make strings' and commit the result."
+            git diff -- Sources/curly/Resources/en.lproj/Localizable.strings
+            exit 1
+          fi
+
+      - name: Build curly.app
+        run: make app UNIVERSAL=1
+
+      - name: Check the bundle looks like an app
+        run: |
+          set -euo pipefail
+          test -x curly.app/Contents/MacOS/curly
+          test -f curly.app/Contents/Info.plist
+          test -f curly.app/Contents/Resources/AppIcon.icns
+          test -d curly.app/Contents/Resources/curly_curly.bundle
+          plutil -lint curly.app/Contents/Info.plist
+          echo "architectures:"
+          lipo -archs curly.app/Contents/MacOS/curly
+          lipo -archs curly.app/Contents/MacOS/curly | grep -q arm64
+          lipo -archs curly.app/Contents/MacOS/curly | grep -q x86_64
+          codesign --verify --verbose=2 curly.app
+
+      - name: Name the package
+        id: name
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            version="${GITHUB_REF_NAME}"
+          else
+            version="$(git rev-parse --short HEAD)"
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "package=curly-${version}-macos" >> "$GITHUB_OUTPUT"
+
+      - name: Package curly.app
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          # ditto, not zip: it keeps the bundle's symlinks and signature intact.
+          ditto -c -k --keepParent curly.app "dist/${PACKAGE}.zip"
+          cd dist && shasum -a 256 "${PACKAGE}.zip" > "${PACKAGE}.zip.sha256"
+        env:
+          PACKAGE: ${{ steps.name.outputs.package }}
+
+      - name: Check the package unpacks into a working bundle
+        run: |
+          set -euo pipefail
+          mkdir -p unpacked
+          ditto -x -k "dist/${PACKAGE}.zip" unpacked
+          codesign --verify --verbose=2 unpacked/curly.app
+        env:
+          PACKAGE: ${{ steps.name.outputs.package }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.name.outputs.package }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
+
+  # Tags starting with v get a GitHub release carrying the macOS app.
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [library, app]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List what is being published
+        run: ls -lh artifacts
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          prerelease=""
+          case "$TAG" in
+            *-*) prerelease="--prerelease" ;;
+          esac
+
+          cat > notes.md <<'NOTES'
+          ## curly
+
+          A curl editor for teaching HTTP. Paste a “Copy as cURL” command from
+          your browser’s developer tools, see it broken into its parts, edit
+          them, and copy the command back out. curly never sends requests —
+          your terminal does that bit.
+
+          ### Installing
+
+          Download the `.zip` below, unzip it, and drag `curly.app` to
+          Applications. Needs macOS 14 or later; the binary is universal, so it
+          runs on both Apple silicon and Intel.
+
+          The app is ad-hoc signed rather than notarised, so the first time you
+          open it macOS will refuse. Right-click it in the Finder and choose
+          **Open**, then confirm. Or, from a terminal:
+
+          ```bash
+          xattr -d com.apple.quarantine /Applications/curly.app
+          ```
+
+          Checksums for each file are in the matching `.sha256`.
+          NOTES
+
+          gh release create "$TAG" \
+            --title "curly $TAG" \
+            --notes-file notes.md \
+            --generate-notes \
+            $prerelease \
+            artifacts/*

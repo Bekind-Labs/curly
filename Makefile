@@ -4,11 +4,21 @@
 #   make run    build the app and launch it
 #   make app    build curly.app, ready to double-click
 #
+# Pass UNIVERSAL=1 to build an app that runs on both Apple silicon and Intel;
+# that is what the released build uses.
+#
 SWIFT ?= swift
 CONFIG ?= release
 APP := curly.app
 BUILD := build
-BIN = $(shell $(SWIFT) build -c $(CONFIG) --show-bin-path)
+
+ifeq ($(UNIVERSAL),1)
+ARCH_FLAGS := --arch arm64 --arch x86_64
+else
+ARCH_FLAGS :=
+endif
+
+BIN = $(shell $(SWIFT) build -c $(CONFIG) $(ARCH_FLAGS) --show-bin-path)
 
 .PHONY: all test build app run clean strings icon
 
@@ -18,7 +28,7 @@ test:
 	$(SWIFT) test
 
 build:
-	$(SWIFT) build -c $(CONFIG)
+	$(SWIFT) build -c $(CONFIG) $(ARCH_FLAGS)
 
 ## Wraps the built binary into a double-clickable application bundle.
 app: build icon

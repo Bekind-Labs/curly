@@ -37,6 +37,28 @@ or later and a Swift 5.9 toolchain.
 imports, so the tokenizer, parser, model and generator are testable anywhere
 Swift runs.
 
+Add `UNIVERSAL=1` to `make app` for a binary that runs on both Apple silicon
+and Intel. That is what released builds use; a plain `make app` builds for the
+machine you are on, which is quicker.
+
+## Releases
+
+[CI](.github/workflows/ci.yml) runs the library tests on Linux and, on macOS,
+runs the tests, builds `curly.app` and checks the bundle. Every run leaves the
+packaged app as a workflow artifact.
+
+Pushing a tag that starts with `v` publishes a GitHub release with the
+universal app zipped up and a `.sha256` beside it:
+
+```bash
+git tag -a v1.0.0 -m "curly 1.0.0"
+git push origin v1.0.0
+```
+
+A tag with a hyphen in it (`v1.1.0-beta1`) is published as a pre-release. The
+app is ad-hoc signed rather than notarised, so the release notes tell people to
+right-click and choose **Open** the first time.
+
 ## How it is put together
 
 Two targets, in one SwiftPM package:
