@@ -5,6 +5,11 @@ import SwiftUI
 
 /// Everything the window knows. One request, one generated command, and a
 /// little bookkeeping for the teaching features.
+/// Where the clipboard-watching preference is stored. A file-scope constant
+/// rather than a static member, because a stored property initialiser cannot
+/// refer to `Self`.
+private let watchClipboardKey = "watchClipboard"
+
 @MainActor
 final class AppModel: ObservableObject {
     /// The request being edited. Always present; `hasImported` says whether the
@@ -29,11 +34,9 @@ final class AppModel: ObservableObject {
     /// Watching the clipboard is a preference so it can be turned off; on
     /// macOS reading the general pasteboard does not prompt, so it ships on.
     @Published var watchesClipboard: Bool = UserDefaults.standard
-        .object(forKey: Self.watchKey) as? Bool ?? true {
-        didSet { UserDefaults.standard.set(watchesClipboard, forKey: Self.watchKey) }
+        .object(forKey: watchClipboardKey) as? Bool ?? true {
+        didSet { UserDefaults.standard.set(watchesClipboard, forKey: watchClipboardKey) }
     }
-
-    private static let watchKey = "watchClipboard"
 
     private var flashToken = 0
     private var copyToken = 0
@@ -64,9 +67,11 @@ final class AppModel: ObservableObject {
             clipboardOffer = nil
             lastSeenPasteboardChange = NSPasteboard.general.changeCount
             return true
+        } catch let error as CurlParserError {
+            importError = error.description
+            return false
         } catch {
-            importError = (error as? CustomStringConvertible)?.description
-                ?? L("import.error.generic", "That did not look like a curl command.")
+            importError = L("import.error.generic", "That did not look like a curl command.")
             return false
         }
     }
