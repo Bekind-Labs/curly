@@ -109,6 +109,19 @@ misparse fails the build rather than quietly shipping the wrong English.
 to `#filePath`, rather than being moved inside the test target to become a
 SwiftPM resource bundle.
 
+## Every merge to main is a release
+
+Rather than deciding when to cut a version, `main` ships continuously: if both
+CI jobs pass, that commit becomes a GitHub release. It suits an app with one
+audience and no compatibility surface, and it means the download link is never
+stale.
+
+That rules out hand-chosen version numbers, so versions are dated —
+`2026.11.05.42`, the 42nd CI run, built on that day. They sort correctly, never
+collide, and say something true (when this was built) instead of something
+invented (how big a change it was). Re-running a build updates the release it
+already made rather than failing on the existing tag.
+
 ## No networking, no response rendering, no credential storage
 
 Deliberately. curly writes a command down; the terminal sends it. Adding a

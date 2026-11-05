@@ -3,14 +3,15 @@ name: CI
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # A run on main publishes a release, so let it finish rather than cancelling
+  # it half way through. Branch and PR runs are still superseded.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -34,6 +35,9 @@ jobs:
   app:
     name: Tests and app bundle (macOS)
     runs-on: macos-14
+    outputs:
+      version: ${{ steps.name.outputs.version }}
+      package: ${{ steps.name.outputs.package }}
     steps:
       - uses: actions/checkout@v4
 
@@ -72,17 +76,22 @@ jobs:
           lipo -archs curly.app/Contents/MacOS/curly | grep -q x86_64
           codesign --verify --verbose=2 curly.app
 
+      # Every merge to main is released, so versions are dated rather than
+      # chosen by hand: 2026.11.05.42 is the 42nd CI run, built on that day.
+      # Anything that is not a merge to main is named after its commit instead
+      # and never becomes a release.
       - name: Name the package
         id: name
         run: |
           set -euo pipefail
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            version="${GITHUB_REF_NAME}"
+          if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            version="$(date -u +%Y.%m.%d).${GITHUB_RUN_NUMBER}"
           else
             version="$(git rev-parse --short HEAD)"
           fi
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "package=curly-${version}-macos" >> "$GITHUB_OUTPUT"
+          echo "Packaging as ${version}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Package curly.app
         run: |
@@ -110,10 +119,11 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  # Tags starting with v get a GitHub release carrying the macOS app.
+  # Every merge to main that passes both jobs above ships: the app is published
+  # as a GitHub release, tagged at the commit it was built from.
   release:
     name: Publish release
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [library, app]
     runs-on: ubuntu-latest
     permissions:
@@ -129,17 +139,13 @@ jobs:
       - name: List what is being published
         run: ls -lh artifacts
 
-      - name: Create the release
+      - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.app.outputs.version }}
         run: |
           set -euo pipefail
-
-          prerelease=""
-          case "$TAG" in
-            *-*) prerelease="--prerelease" ;;
-          esac
+          tag="v${VERSION}"
 
           cat > notes.md <<'NOTES'
           ## curly
@@ -166,9 +172,20 @@ jobs:
           Checksums for each file are in the matching `.sha256`.
           NOTES
 
-          gh release create "$TAG" \
-            --title "curly $TAG" \
-            --notes-file notes.md \
-            --generate-notes \
-            $prerelease \
-            artifacts/*
+          # Re-running a build of the same commit should refresh the release it
+          # already made rather than fall over.
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag exists; replacing its files."
+            gh release upload "$tag" artifacts/* --clobber
+          else
+            gh release create "$tag" \
+              --title "curly $VERSION" \
+              --notes-file notes.md \
+              --generate-notes \
+              --target "$GITHUB_SHA" \
+              --latest \
+              artifacts/*
+          fi
+
+          echo "Released [$tag](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${tag})" \
+            >> "$GITHUB_STEP_SUMMARY"

@@ -44,20 +44,21 @@ machine you are on, which is quicker.
 ## Releases
 
 [CI](.github/workflows/ci.yml) runs the library tests on Linux and, on macOS,
-runs the tests, builds `curly.app` and checks the bundle. Every run leaves the
-packaged app as a workflow artifact.
+runs the tests, builds `curly.app` and checks the bundle.
 
-Pushing a tag that starts with `v` publishes a GitHub release with the
-universal app zipped up and a `.sha256` beside it:
+**Every merge to `main` that passes both jobs ships.** There is nothing to tag
+and no version to bump: the app is zipped up, given a dated version, and
+published as a GitHub release along with its `.sha256`. The newest build is
+always at:
 
-```bash
-git tag -a v1.0.0 -m "curly 1.0.0"
-git push origin v1.0.0
-```
+    https://github.com/Bekind-Labs/curly/releases/latest
 
-A tag with a hyphen in it (`v1.1.0-beta1`) is published as a pre-release. The
-app is ad-hoc signed rather than notarised, so the release notes tell people to
-right-click and choose **Open** the first time.
+Versions read `2026.11.05.42` — built on that date, by the 42nd CI run. Pull
+requests build and package the app too, but publish nothing; their build is
+attached to the run as a workflow artifact instead.
+
+The app is ad-hoc signed rather than notarised, so the release notes tell
+people to right-click and choose **Open** the first time.
 
 ## How it is put together
 
