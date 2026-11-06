@@ -32,7 +32,7 @@ struct OptionsSection: View {
         Menu(L("options.add", "Add an option")) {
             ForEach(Self.suggested, id: \.self) { flag in
                 if model.request.option(flag) == nil, let spec = CurlOptionCatalog.spec(forFlag: flag) {
-                    Button("\(spec.long) — \(spec.explanation)") {
+                    Button("\(spec.long) — \(L("option." + spec.long, spec.explanation))") {
                         model.request.options.append(CurlOption(flag: spec.long))
                         model.flash(.body)
                     }

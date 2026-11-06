@@ -4,8 +4,12 @@
 Two kinds of entry go in:
 
 * every `L("key", "English")` call in the app's source, and
-* the explanations that live as data in CurlKit — the section notes and the
-  per-flag ones — read straight out of the Swift source.
+* the text that lives as data in CurlKit — the section notes, the per-flag
+  ones and the names of the examples — read straight out of the Swift source.
+
+Only the English catalog is generated. Translations such as
+ja.lproj/Localizable.strings are written by hand; StringCatalogTests checks
+they cover every English key.
 
 Nothing here needs a toolchain or a build: it is text in, text out. The reading
 of the Swift source is kept honest by StringCatalogTests, which compares the
@@ -109,10 +113,24 @@ def option_entries():
     return entries
 
 
+def example_entries():
+    """The name of each example in the "Load an example" menu."""
+    source = (ROOT / "Sources/CurlKit/Explain/Examples.swift").read_text(encoding="utf-8")
+    entries = {}
+    for example_id, title in re.findall(
+        r"Example\(\s*id: " + STRING + r",\s*title: " + STRING, source, re.S
+    ):
+        entries["example.%s.title" % example_id] = unescape_swift(title)
+    if not entries:
+        sys.exit("could not read any examples out of Examples.swift")
+    return entries
+
+
 def main():
     entries = {}
     entries.update(explanation_entries())
     entries.update(option_entries())
+    entries.update(example_entries())
     entries.update(app_entries())
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)

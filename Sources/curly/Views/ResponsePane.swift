@@ -110,7 +110,7 @@ struct ResponsePane: View {
         } else if let response = model.response {
             VStack(alignment: .leading, spacing: 14) {
                 ForEach(response.warnings, id: \.self) { warning in
-                    Label(warning, systemImage: "info.circle")
+                    Label(warning.localizedText, systemImage: "info.circle")
                         .font(.caption)
                         .foregroundStyle(.orange)
                 }

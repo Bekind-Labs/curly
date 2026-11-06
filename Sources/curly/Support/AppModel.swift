@@ -77,7 +77,7 @@ final class AppModel: ObservableObject {
             lastSeenPasteboardChange = NSPasteboard.general.changeCount
             return true
         } catch let error as CurlParserError {
-            importError = error.description
+            importError = error.localizedText
             return false
         } catch {
             importError = L("import.error.generic", "That did not look like a curl command.")
@@ -99,7 +99,7 @@ final class AppModel: ObservableObject {
         do {
             plan = try RequestPlanner.plan(for: request)
         } catch {
-            sendError = (error as? CustomStringConvertible).map(\.description)
+            sendError = (error as? RequestPlanError)?.localizedText
                 ?? L("send.error.generic", "curly could not work out what to send.")
             response = nil
             return

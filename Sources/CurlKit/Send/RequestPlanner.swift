@@ -30,7 +30,7 @@ public enum RequestPlanner {
     ]
 
     public static func plan(for request: CurlRequest) throws -> RequestPlan {
-        var warnings: [String] = []
+        var warnings: [RequestPlanWarning] = []
         var url = request.url
         if url.scheme.isEmpty { url.scheme = "http" }   // curl's own default
         guard !url.host.isEmpty else { throw RequestPlanError.noAddress }
@@ -46,7 +46,7 @@ public enum RequestPlanner {
             body = try multipartBody(parts, boundary: boundary)
             impliedContentType = "multipart/form-data; boundary=\(boundary)"
             if parts.contains(where: { !$0.kind.isMultipart }) {
-                warnings.append("This command mixes -F with other body flags; curly sent the -F fields.")
+                warnings.append(.mixedMultipart)
             }
         } else if !parts.isEmpty {
             let joined = try parts.map(try encodedValue(of:)).joined(separator: "&")
@@ -69,7 +69,7 @@ public enum RequestPlanner {
             .filter(\.isEnabled)
             .compactMap { section -> String? in
                 if let raw = section.rawValue {
-                    warnings.append("curly cannot read the cookie file “\(raw)”, so no cookies were sent.")
+                    warnings.append(.unreadableCookieFile(raw))
                     return nil
                 }
                 let value = section.argumentValue
@@ -117,7 +117,7 @@ public enum RequestPlanner {
             .filter { !harmless.contains($0) && !handled.contains($0) }
 
         if !request.extraArguments.isEmpty {
-            warnings.append("This command has more than one address; curly sent the first.")
+            warnings.append(.extraAddresses)
         }
 
         return RequestPlan(

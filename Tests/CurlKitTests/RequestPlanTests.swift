@@ -58,7 +58,7 @@ final class RequestPlanTests: XCTestCase {
     func testCookieFilesAreNotGuessedAt() throws {
         let planned = try plan("curl https://x -b jar.txt")
         XCTAssertNil(value(planned, "cookie"))
-        XCTAssertTrue(planned.warnings.contains { $0.contains("jar.txt") })
+        XCTAssertEqual(planned.warnings, [.unreadableCookieFile("jar.txt")])
     }
 
     func testUserFlagBecomesABasicAuthorizationHeader() throws {

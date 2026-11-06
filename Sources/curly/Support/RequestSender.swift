@@ -15,7 +15,7 @@ struct SentResponse: Equatable {
     var finalURL: String?
     /// The request as it went out, for the verbose transcript.
     var requestTranscript: [String]
-    var warnings: [String]
+    var warnings: [RequestPlanWarning]
 
     var isSuccess: Bool { (200..<300).contains(statusCode) }
     var isRedirect: Bool { (300..<400).contains(statusCode) }

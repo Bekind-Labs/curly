@@ -47,7 +47,7 @@ struct CurlyApp: App {
         CommandGroup(after: .newItem) {
             Menu(L("menu.loadExample", "Load an Example")) {
                 ForEach(Examples.all) { example in
-                    Button(example.title) { model.load(example) }
+                    Button(example.localizedTitle) { model.load(example) }
                 }
             }
             Button(L("menu.startOver", "Start Over")) { model.startOver() }

@@ -66,7 +66,7 @@ public struct RequestPlan: Equatable, Sendable {
     /// itself. Shown to the user rather than ignored quietly.
     public var unsupportedOptions: [String]
     /// Anything else worth saying before pressing send.
-    public var warnings: [String]
+    public var warnings: [RequestPlanWarning]
 
     public init(
         method: String,
@@ -78,7 +78,7 @@ public struct RequestPlan: Equatable, Sendable {
         timeout: TimeInterval? = nil,
         verbosity: Verbosity = .normal,
         unsupportedOptions: [String] = [],
-        warnings: [String] = []
+        warnings: [RequestPlanWarning] = []
     ) {
         self.method = method
         self.url = url
@@ -122,6 +122,29 @@ public enum RequestPlanError: Error, Equatable, CustomStringConvertible {
             return "There is no web address to send this to."
         case .unreadableFile(let path):
             return "curly could not read the file “\(path)”."
+        }
+    }
+}
+
+/// Something worth telling the user about a request curly is about to send.
+/// Typed rather than a sentence, so the app can say it in the user's language;
+/// `description` is the English.
+public enum RequestPlanWarning: Hashable, Sendable, CustomStringConvertible {
+    /// `-F` sits alongside `-d` and friends; only the `-F` fields were sent.
+    case mixedMultipart
+    /// `-b` named a cookie file, which curly does not read.
+    case unreadableCookieFile(String)
+    /// The command named more than one address; only the first was sent.
+    case extraAddresses
+
+    public var description: String {
+        switch self {
+        case .mixedMultipart:
+            return "This command mixes -F with other body flags; curly sent the -F fields."
+        case .unreadableCookieFile(let path):
+            return "curly cannot read the cookie file “\(path)”, so no cookies were sent."
+        case .extraAddresses:
+            return "This command has more than one address; curly sent the first."
         }
     }
 }

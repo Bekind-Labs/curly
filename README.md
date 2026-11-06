@@ -212,5 +212,7 @@ clipboard, and only to offer an import — there's a preference to turn that off
 ## Contributing
 
 Issues and pull requests are welcome. `make test` should be green, and
-`make strings` regenerates the localisation catalog if you add any user-facing
-text. CI runs the library tests on Linux and builds the app on macOS.
+`make strings` regenerates the English localisation catalog if you add any
+user-facing text. curly is also translated into Japanese
+(`Sources/curly/Resources/ja.lproj/Localizable.strings`), which is edited by
+hand: add a translation for each new key there too, or the tests will fail. CI runs the library tests on Linux and builds the app on macOS.

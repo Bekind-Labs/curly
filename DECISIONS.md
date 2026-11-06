@@ -103,6 +103,20 @@ Swift with regular expressions is only safe because `StringCatalogTests`
 compares the generated file against the real values at runtime, so a
 misparse fails the build rather than quietly shipping the wrong English.
 
+## Translations are written by hand, next to the English
+
+Only `en.lproj` is generated. Other languages — so far `ja.lproj` — are plain
+`.strings` files kept by hand, with the same keys. `StringCatalogTests` fails
+if a translation is missing a key, keeps one English has dropped, or changes
+its `%@`/`%d` placeholders, so adding an English string forces a decision about
+every translation in the same change. `Info.plist` lists the languages in
+`CFBundleLocalizations` so macOS offers them.
+
+CurlKit stays free of resources and languages. The sentences it can produce —
+parse errors, send errors, warnings, example names — are enums or data there,
+with English `description`s, and the app translates them case by case in
+`LocalizedMessages.swift`.
+
 ## Fixtures are read from disk, not bundled
 
 `Tests/Fixtures/` keeps its readable per-browser layout and is loaded relative

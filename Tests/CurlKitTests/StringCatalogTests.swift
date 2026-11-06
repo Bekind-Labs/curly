@@ -11,11 +11,15 @@ final class StringCatalogTests: XCTestCase {
         .deletingLastPathComponent()   // Tests
         .deletingLastPathComponent()   // repository root
 
-    private static let catalogURL = repositoryRoot
-        .appendingPathComponent("Sources/curly/Resources/en.lproj/Localizable.strings")
+    private static func catalogURL(_ language: String) -> URL {
+        repositoryRoot.appendingPathComponent("Sources/curly/Resources/\(language).lproj/Localizable.strings")
+    }
 
-    private func loadCatalog() throws -> [String: String] {
-        let text = try String(contentsOf: Self.catalogURL, encoding: .utf8)
+    /// The hand-written translations. Each must cover every English key.
+    private static let translations = ["ja"]
+
+    private func loadCatalog(_ language: String = "en") throws -> [String: String] {
+        let text = try String(contentsOf: Self.catalogURL(language), encoding: .utf8)
         var entries: [String: String] = [:]
         for line in text.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
@@ -53,6 +57,45 @@ final class StringCatalogTests: XCTestCase {
         for spec in CurlOptionCatalog.all {
             XCTAssertEqual(catalog["option." + spec.long], spec.explanation, spec.long)
         }
+    }
+
+    func testEveryExampleIsInTheCatalog() throws {
+        let catalog = try loadCatalog()
+        for example in Examples.all {
+            XCTAssertEqual(catalog["example." + example.id + ".title"], example.title, example.id)
+        }
+    }
+
+    func testTranslationsCoverEveryEnglishKey() throws {
+        let english = try loadCatalog()
+        for language in Self.translations {
+            let translated = try loadCatalog(language)
+            let missing = Set(english.keys).subtracting(translated.keys).sorted()
+            let stale = Set(translated.keys).subtracting(english.keys).sorted()
+            XCTAssertEqual(missing, [], "\(language) is missing these keys")
+            XCTAssertEqual(stale, [], "\(language) has keys English no longer uses")
+        }
+    }
+
+    /// A translation that drops or adds a `%@` would crash `String(format:)`
+    /// or show the wrong thing, so the placeholders must match the English.
+    func testTranslationsKeepTheirPlaceholders() throws {
+        let english = try loadCatalog()
+        for language in Self.translations {
+            let translated = try loadCatalog(language)
+            for (key, value) in english {
+                guard let other = translated[key] else { continue }
+                XCTAssertEqual(Self.placeholders(in: other), Self.placeholders(in: value), "\(language): \(key)")
+            }
+        }
+    }
+
+    private static func placeholders(in value: String) -> [String] {
+        guard let regex = try? NSRegularExpression(pattern: "%[@d]") else { return [] }
+        let range = NSRange(value.startIndex..<value.endIndex, in: value)
+        return regex.matches(in: value, range: range)
+            .compactMap { Range($0.range, in: value).map { String(value[$0]) } }
+            .sorted()
     }
 
     /// Scans the app's own source for `L("key", "English")` and checks each one

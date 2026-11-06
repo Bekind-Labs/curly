@@ -82,7 +82,7 @@ struct ImportView: View {
                     Button {
                         model.load(example)
                     } label: {
-                        Text(example.title)
+                        Text(example.localizedTitle)
                     }
                 }
             }
