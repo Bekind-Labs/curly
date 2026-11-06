@@ -18,38 +18,17 @@ lit up — so you can see which field produces which piece of the command.
 Then you copy the command back out and run it in your terminal — or press
 **Send** and see the answer in a pane underneath, pretty-printed.
 
+curly was born as a teaching tool — every section has a **?** that explains,
+in two or three jargon-free sentences, what that part of an HTTP request
+actually is.
+
+![curly with a copied request pasted in: the parsed parts on the left, the regenerated command on the right with the edited tokens highlighted](docs/curly.png)
+
 ### [⬇ Download for macOS](https://github.com/Bekind-Labs/curly/releases/latest)
 
 macOS 14 or later · universal (Apple silicon and Intel) · free
 
-Signed with Bekind Labs' Developer ID and notarised by Apple, so it opens
-without a fight.
-
-## The command is the point; Send is a convenience
-
-curly is a curl *editor* first. **Copy** is the primary action, and the thing
-you walk away with is a line of text you can read, save, paste into a ticket,
-and run anywhere.
-
-That ordering is deliberate. It was built for pairing with developers who don't
-know HTTP yet, and if the app is the only thing that can run the request then
-HTTP stays a black box behind someone else's UI. The command being the artifact
-is what makes the lesson portable.
-
-But round-tripping through a terminal to check one header gets old, so there is
-a **Send** button too. It runs the request, shows the answer in a pane
-underneath, and does its best to behave exactly as curl would — it won't follow
-redirects unless the command says `-L`, and it only skips certificate checks
-when the command says `-k`, which it tells you about.
-
-The pane has tabs for the body, the response headers, and what curly sent, so
-all of it is a click away. The `-s`/`-i`/`-v` setting in the editor controls
-what the *command* prints in a terminal, which is a different question — when
-you look at something your command wouldn't print, the pane says so and offers
-to add the flag that would.
-
-It's useful outside teaching too — any time someone hands you a forty-line
-Copy-as-cURL blob and you need to find the one header that matters.
+No accounts, no telemetry — the command goes in by paste and comes out by copy
 
 ## Every part of the request is a thing you can poke
 
@@ -74,80 +53,24 @@ Copy-as-cURL blob and you need to find the one header that matters.
   choice, so you can set how much the command prints without remembering which
   letter does what.
 
-curly speaks English, Japanese and Korean, following whatever your Mac is set
-to. Every user-facing string lives in a catalog, including the explanations.
-
-Nothing you type is autocorrected. macOS's curly quotes would silently stop a
-JSON body being JSON, so every automatic substitution is off; if you paste text
-that already has them, curly points at it and offers to straighten it.
-
-Every section has a **?** that explains, in two or three jargon-free sentences,
-what that part of an HTTP request actually is.
-
-## It handles what browsers actually copy
-
-The parser is driven by real "Copy as cURL" output from Chrome, Safari and
-Firefox on macOS, checked into [`Tests/Fixtures/`](Tests/Fixtures). That means
-multi-line commands with backslash continuations, single and double quotes,
-bash `$'…'` ANSI-C quoting down to the raw UTF-8 byte escapes Firefox emits,
-`--data-raw`, `--compressed`, `-b`, `-H 'cookie: …'`, `-X`, implied POST,
-`-G`, `-d`/`--data-binary`/`--data-urlencode`, `-F`, `-u`, `-A`, `-e`, `-L`,
-`-k`, `-I`, `--url`, and bundled short flags like `-sSLk`. 61 curl flags are
-recognised in all; 49 of them carry a plain-English explanation, and the ones
-that don't are preserved verbatim.
-
-Round-tripping is a tested property, not a hope:
-
-```
-parse(generate(model)) == model
-generate(parse(command)) hands curl the same arguments command did
-```
-
-The second one is checked by running both commands through a real `bash` with a
-stub `curl` on `PATH` and comparing the recorded argv. That test caught `-F`
-quietly coming back out as `--form`.
-
 ## Installing
 
 Download the zip from [Releases](https://github.com/Bekind-Labs/curly/releases/latest),
-unzip, drag `curly.app` to Applications, open it. It's signed and notarised,
-so the only thing macOS asks is the usual "downloaded from the Internet, are
-you sure?" — there's no Gatekeeper refusal to work around.
+unzip, drag `curly.app` to Applications, open it. Each release also ships a
+`.sha256` next to the zip.
 
 Prefer to build it yourself? It needs nothing but a Swift toolchain and takes
-well under a minute:
-
-```bash
-git clone https://github.com/Bekind-Labs/curly.git
-cd curly
-make run
-```
-
-Each release also ships a `.sha256` next to the zip.
+well under a minute — see [Building from source](#building-from-source).
 
 ## Building from source
 
 ```bash
+git clone https://github.com/Bekind-Labs/curly.git
+cd curly
 make test   # run the CurlKit tests
 make run    # build curly.app and launch it
 make app    # build curly.app, ready to double-click
 ```
-
-`make app` wraps the binary into a bundle with an `Info.plist`, a generated
-icon and an ad-hoc signature. Add `UNIVERSAL=1` for a binary that runs on both
-Apple silicon and Intel, which is what releases use.
-
-With a Developer ID to hand you can make a distributable build locally too;
-this also turns on the hardened runtime and a trusted timestamp, which
-notarisation requires:
-
-```bash
-make app UNIVERSAL=1 SIGN_IDENTITY="Developer ID Application: … (TEAMID)"
-```
-
-`make test` needs neither macOS nor Xcode. `CurlKit` is pure Swift with no UI
-imports, so the tokenizer, parser, model and generator are testable anywhere
-Swift runs — which is how the whole suite runs on Linux in CI.
 
 ## How it's put together
 
@@ -172,20 +95,16 @@ opening a socket. That keeps the fiddly part (which flags change the body, what
 the implied `Content-Type` is, where cookies end up) testable on Linux, and
 leaves the app with a thin `URLSession` call.
 
-Every merge to `main` that passes CI is published as a release automatically,
-versioned by date: `2026.11.05.42` is that day's 42nd CI run.
-
-The decisions that weren't obvious — and the ones you might disagree with — are
-written down in [DECISIONS.md](DECISIONS.md).
-
 ## Questions you might reasonably have
 
 **Why not Postman / Insomnia / Bruno / HTTPie?**
-Those are built for people who already understand what a request *is*, and they
-treat the request as something that lives inside the app. In curly the curl
-command is the document: it goes in by paste and comes out by copy, and Send is
-a convenience on top rather than the only way to run anything. One screen, no
-accounts, no workspaces, no sync, and every section explains itself.
+They keep the request inside the app, which is the wrong shape for teaching:
+whoever's learning walks away with a collection instead of a command they can
+run anywhere. curly was built at [Bekind Labs](https://bekindlabs.com) for
+pairing with developers who don't know HTTP yet, so the command is the document
+and every section explains itself. It's for viewing, editing and understanding
+one curl command — no more, no less. If you need collections, environments or a
+test runner, those tools are the right ones.
 
 **Does Send behave the same as running the command?**
 That's the intent, and the translation from flags to an actual request is
@@ -202,19 +121,14 @@ reasonable thing to build on top.
 
 **Is it signed?**
 Release builds are signed with Bekind Labs' Developer ID and notarised by
-Apple, so Gatekeeper lets them open without ceremony. Signing happens only on
-a merge to `main` — pull request builds are ad-hoc signed, so a PR never gets
-near the certificate.
+Apple, so Gatekeeper lets them open without ceremony.
 
 **Does it phone home?**
-No analytics, no update check, no telemetry. The only requests it ever makes
-are the ones you press Send on, to the address in your own command, and nothing
-about them is stored or sent anywhere else. The only thing it reads is your
-clipboard, and only to offer an import — there's a preference to turn that off.
-
-## Licence
-
-[MIT](LICENSE).
+No analytics, no update check, no telemetry. Ever. The only requests it ever
+makes are the ones you press Send on, to the address in your own command, and
+nothing about them is stored or sent anywhere else. The only thing it reads is
+your clipboard, and only to offer an import — there's a preference to turn that
+off.
 
 ## Contributing
 
@@ -223,3 +137,14 @@ Issues and pull requests are welcome. `make test` should be green, and
 A translation whose English has changed since it was written is flagged and has
 to be updated before the tests pass. CI runs the library tests on Linux and
 builds the app on macOS.
+
+## About Bekind Labs
+
+curly is maintained by [Bekind Labs](https://bekindlabs.com), a Tokyo
+consultancy founded by Pivotal Labs alumni that pairs with client teams on XP
+and modernisation work. If you'd like to work with us,
+[get in touch](mailto:greg@bekindlabs.com).
+
+## Licence
+
+[MIT](LICENSE).
