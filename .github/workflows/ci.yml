@@ -201,12 +201,57 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  # Every merge to main that passes both jobs above ships: the app is published
+  # README.md is the source of truth; the translations have to move with it or
+  # they quietly start describing an app that no longer exists.
+  readmes:
+    name: README translations in step
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check the translations moved with the English
+        env:
+          BEFORE: ${{ github.event.before }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git fetch --quiet origin "$BASE_REF"
+            range="$(git merge-base "origin/$BASE_REF" HEAD)..HEAD"
+          elif [ -n "${BEFORE:-}" ] \
+            && [ "$BEFORE" != "0000000000000000000000000000000000000000" ] \
+            && git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+            range="$BEFORE..$GITHUB_SHA"
+          else
+            echo "Nothing to compare against on this event; skipping."
+            exit 0
+          fi
+
+          changed="$(git diff --name-only "$range")"
+          echo "Changed in $range:"
+          echo "$changed" | sed 's/^/  /'
+
+          if ! echo "$changed" | grep -qx 'README\.md'; then
+            echo "README.md untouched; nothing to check."
+            exit 0
+          fi
+          if echo "$changed" | grep -qxE 'README\.(ja|ko)\.md'; then
+            echo "README.md changed and a translation moved with it."
+            exit 0
+          fi
+
+          echo "::error file=README.md::README.md changed but neither README.ja.md nor README.ko.md did. Update the translations (and their 'synced to' line) in the same push."
+          exit 1
+
+  # Every merge to main that passes the jobs above ships: the app is published
   # as a GitHub release, tagged at the commit it was built from.
   release:
     name: Publish release
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [library, app]
+    needs: [library, app, readmes]
     runs-on: ubuntu-latest
     permissions:
       contents: write
