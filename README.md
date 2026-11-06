@@ -20,10 +20,8 @@ Then you copy the command back out and run it in your terminal — or press
 
 macOS 14 or later · universal (Apple silicon and Intel) · ~1.8 MB · free
 
-> **First launch:** release builds are signed with Bekind Labs' Developer ID
-> and notarised by Apple, so they open normally. Builds made before signing was
-> set up are ad-hoc signed — for those, right-click in the Finder and choose
-> **Open**. Each release says which it is.
+Signed with Bekind Labs' Developer ID and notarised by Apple, so it opens
+without a fight.
 
 ## The command is the point; Send is a convenience
 
@@ -107,7 +105,9 @@ quietly coming back out as `--form`.
 ## Installing
 
 Download the zip from [Releases](https://github.com/Bekind-Labs/curly/releases/latest),
-unzip, drag `curly.app` to Applications. Right-click → **Open** the first time.
+unzip, drag `curly.app` to Applications, open it. It's signed and notarised,
+so the only thing macOS asks is the usual "downloaded from the Internet, are
+you sure?" — there's no Gatekeeper refusal to work around.
 
 Prefer to build it yourself? It needs nothing but a Swift toolchain and takes
 well under a minute:
