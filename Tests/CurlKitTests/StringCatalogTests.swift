@@ -11,11 +11,18 @@ final class StringCatalogTests: XCTestCase {
         .deletingLastPathComponent()   // Tests
         .deletingLastPathComponent()   // repository root
 
-    private static let catalogURL = repositoryRoot
-        .appendingPathComponent("Sources/curly/Resources/en.lproj/Localizable.strings")
+    private static let catalogURL = catalogURL(for: "en")
 
-    private func loadCatalog() throws -> [String: String] {
-        let text = try String(contentsOf: Self.catalogURL, encoding: .utf8)
+    /// Everything curly ships beyond English.
+    private static let translations = ["ja", "ko"]
+
+    private static func catalogURL(for locale: String) -> URL {
+        repositoryRoot
+            .appendingPathComponent("Sources/curly/Resources/\(locale).lproj/Localizable.strings")
+    }
+
+    private func loadCatalog(_ locale: String = "en") throws -> [String: String] {
+        let text = try String(contentsOf: Self.catalogURL(for: locale), encoding: .utf8)
         var entries: [String: String] = [:]
         for line in text.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
@@ -73,6 +80,66 @@ final class StringCatalogTests: XCTestCase {
             }
         }
         XCTAssertGreaterThan(checked, 40, "the scanner found suspiciously few strings")
+    }
+
+    // MARK: Translations
+
+    /// Every language has to answer for every key. A key that is merely
+    /// missing would fall back to English at runtime, but it would also mean
+    /// a translator never saw it.
+    func testEveryLanguageCoversEveryKey() throws {
+        let english = Set(try loadCatalog().keys)
+        for locale in Self.translations {
+            let translated = Set(try loadCatalog(locale).keys)
+            XCTAssertEqual(
+                translated.symmetricDifference(english),
+                [],
+                "\(locale) is out of step with English — run `make strings`"
+            )
+        }
+    }
+
+    /// `make strings` marks an entry whose English has moved on since it was
+    /// translated. A stale translation is worse than a missing one: it is
+    /// confidently wrong.
+    func testNoTranslationIsStaleOrMissing() throws {
+        for locale in Self.translations {
+            let text = try String(contentsOf: Self.catalogURL(for: locale), encoding: .utf8)
+            XCTAssertFalse(
+                text.contains("TODO: translate"),
+                "\(locale) has untranslated strings"
+            )
+            XCTAssertFalse(
+                text.contains("STALE:"),
+                "\(locale) has translations whose English changed — retranslate and re-run `make strings`"
+            )
+        }
+    }
+
+    /// A translation that drops or adds a %@ or %d crashes `String(format:)`
+    /// rather than merely reading oddly, so the placeholders have to match.
+    func testFormatPlaceholdersMatchEnglish() throws {
+        let english = try loadCatalog()
+        for locale in Self.translations {
+            let translated = try loadCatalog(locale)
+            for (key, source) in english {
+                guard let text = translated[key] else { continue }
+                XCTAssertEqual(
+                    Self.placeholders(in: source).sorted(),
+                    Self.placeholders(in: text).sorted(),
+                    "\(locale) \(key): placeholders differ from English"
+                )
+            }
+        }
+    }
+
+    private static func placeholders(in text: String) -> [String] {
+        let pattern = "%(?:[0-9]+\\$)?[@dfsu]"
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+        return regex.matches(in: text, range: range).compactMap { match in
+            Range(match.range, in: text).map { String(text[$0]) }
+        }
     }
 
     /// A small scanner for `L("…", "…")`, tolerating the two literals sitting

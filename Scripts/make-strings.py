@@ -20,7 +20,16 @@ import sys
 import textwrap
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUTPUT = ROOT / "Sources/curly/Resources/en.lproj/Localizable.strings"
+RESOURCES = ROOT / "Sources/curly/Resources"
+OUTPUT = RESOURCES / "en.lproj/Localizable.strings"
+
+# Languages curly ships beyond English. Their files hold the translations and
+# are the source of truth for them; this script only keeps the key set in step
+# and flags anything whose English has moved on.
+LOCALES = {"ja": "日本語", "ko": "한국어"}
+
+NEEDS_TRANSLATION = "TODO: translate"
+STALE = "STALE: the English changed since this was translated"
 
 
 
@@ -109,6 +118,61 @@ def option_entries():
     return entries
 
 
+def read_locale(path):
+    """Existing translations, as key -> (english it was translated from, text)."""
+    if not path.exists():
+        return {}
+    entries = {}
+    english = None
+    comment = re.compile(r"^/\* EN: (.*) \*/$")
+    line_pattern = re.compile(r"^" + STRING + r" = " + STRING + r";$")
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        matched_comment = comment.match(line)
+        if matched_comment:
+            english = unescape_swift(matched_comment.group(1))
+            continue
+        matched = line_pattern.match(line)
+        if matched:
+            entries[matched.group(1)] = (english, unescape_swift(matched.group(2)))
+            english = None
+    return entries
+
+
+def write_locale(code, name, entries):
+    """Rewrites one translation file: every current key, in order, each with
+    the English it should be a translation of."""
+    path = RESOURCES / f"{code}.lproj/Localizable.strings"
+    existing = read_locale(path)
+
+    untranslated, stale = [], []
+    lines = [
+        f"/* curly — {name}.",
+        "   Key set maintained by `make strings`; the translations are edited by hand.",
+        "   Each entry carries the English it was translated from — if that English",
+        "   changes, the entry is marked and the string catalog test fails. */",
+        "",
+    ]
+    for key in sorted(entries):
+        english = entries[key]
+        was, text = existing.get(key, (None, None))
+        if text is None:
+            untranslated.append(key)
+            text = english
+        elif was != english:
+            stale.append(key)
+        lines.append('/* EN: %s */' % escape_for_catalog(english))
+        if text == english and key in untranslated:
+            lines.append("/* %s */" % NEEDS_TRANSLATION)
+        elif key in stale:
+            lines.append("/* %s */" % STALE)
+        lines.append('"%s" = "%s";' % (key, escape_for_catalog(text)))
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return untranslated, stale
+
+
 def main():
     entries = {}
     entries.update(explanation_entries())
@@ -122,6 +186,15 @@ def main():
         for key in sorted(entries):
             handle.write('"%s" = "%s";\n' % (key, escape_for_catalog(entries[key])))
     print("wrote %d strings to %s" % (len(entries), OUTPUT.relative_to(ROOT)))
+
+    for code, name in sorted(LOCALES.items()):
+        untranslated, stale = write_locale(code, name, entries)
+        note = ""
+        if untranslated:
+            note += "  %d untranslated" % len(untranslated)
+        if stale:
+            note += "  %d stale" % len(stale)
+        print("wrote %d strings to %s.lproj%s" % (len(entries), code, note))
 
 
 if __name__ == "__main__":

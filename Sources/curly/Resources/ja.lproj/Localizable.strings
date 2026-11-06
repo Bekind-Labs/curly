@@ -1,0 +1,427 @@
+/* curly — 日本語.
+   Key set maintained by `make strings`; the translations are edited by hand.
+   Each entry carries the English it was translated from — if that English
+   changes, the entry is marked and the string catalog test fails. */
+
+/* EN: Username and password */
+"auth.basic" = "ユーザー名とパスワード";
+/* EN: Token */
+"auth.bearer" = "トークン";
+/* EN: Sent as “Authorization: Bearer …”, which you can see below. */
+"auth.bearerNote" = "「Authorization: Bearer …」として送られます。下のヘッダー欄でも確認できます。";
+/* EN: curl turns -u into an Authorization header for you. */
+"auth.flagNote" = "curl が -u を Authorization ヘッダーに変換して送ります。";
+/* EN: Written out as an Authorization header, which you can see below. */
+"auth.headerNote" = "Authorization ヘッダーとして書き出されます。下のヘッダー欄でも確認できます。";
+/* EN: Nothing */
+"auth.none" = "なし";
+/* EN: This request does not prove who you are. */
+"auth.noneNote" = "このリクエストは本人確認の情報を送りません。";
+/* EN: Something else */
+"auth.other" = "その他";
+/* EN: This request signs in with “%@”, which curly shows as a plain header. */
+"auth.otherNote" = "このリクエストは「%@」でサインインします。curly では通常のヘッダーとして表示されます。";
+/* EN: password */
+"auth.password" = "パスワード";
+/* EN: token */
+"auth.tokenPrompt" = "トークン";
+/* EN: username */
+"auth.user" = "ユーザー名";
+/* EN: Looks like you copied a curl command — import it? */
+"banner.clipboard" = "curl コマンドをコピーしたようです。読み込みますか？";
+/* EN: Import */
+"banner.import" = "読み込む";
+/* EN: Not now */
+"banner.notNow" = "今はしない";
+/* EN: Add a body */
+"body.add" = "ボディを追加";
+/* EN: Add a form field */
+"body.addField" = "フォーム項目を追加";
+/* EN: Content-Type */
+"body.contentType" = "Content-Type";
+/* EN: not set */
+"body.contentType.none" = "未設定";
+/* EN: This request sends nothing in its body. */
+"body.empty" = "このリクエストはボディを送りません。";
+/* EN: name */
+"body.fieldName" = "名前";
+/* EN: value */
+"body.fieldValue" = "値";
+/* EN: Form fields */
+"body.formFields" = "フォーム項目";
+/* EN: Valid JSON */
+"body.jsonOK" = "正しい JSON です";
+/* EN: Squash it back */
+"body.minify" = "1行に戻す";
+/* EN: A value starting with @ is a file to upload. */
+"body.multipartHint" = "@ で始まる値はアップロードするファイルを指します。";
+/* EN: This body is built from several different flags. */
+"body.note.mixed" = "このボディは複数のフラグから組み立てられています。";
+/* EN: Sent as a form that can carry files. */
+"body.note.multipart" = "ファイルも送れる形式のフォームとして送信されます。";
+/* EN: Each piece is escaped by curl before it is sent. */
+"body.note.urlencoded" = "送信前に curl が各項目をエスケープします。";
+/* EN: name=value */
+"body.partValue" = "名前=値";
+/* EN: Lay it out */
+"body.prettyPrint" = "整形する";
+/* EN: There are curly quotes in here, which is why this is not valid JSON. */
+"body.smartQuotes.breaksJSON" = "丸い引用符（“ ”）が含まれています。JSON として正しくないのはそのためです。";
+/* EN: Straighten them */
+"body.smartQuotes.fix" = "まっすぐにする";
+/* EN: There are curly quotes in here. Servers rarely want those. */
+"body.smartQuotes.present" = "丸い引用符（“ ”）が含まれています。サーバーが求めていることはまずありません。";
+/* EN: Copied — now paste it in your terminal */
+"command.copied" = "コピーしました。ターミナルに貼り付けてください";
+/* EN: Copy command */
+"command.copy" = "コマンドをコピー";
+/* EN: Send */
+"command.send" = "送信";
+/* EN: Run this request now and show what comes back. ⌘↩ */
+"command.sendHelp" = "このリクエストをいま実行して、返ってきたものを表示します。⌘↩";
+/* EN: Sending… */
+"command.sending" = "送信中…";
+/* EN: Start over */
+"command.startOver" = "最初から";
+/* EN: Multi-line */
+"command.style.multiLine" = "複数行";
+/* EN: One line */
+"command.style.singleLine" = "1行";
+/* EN: The curl command */
+"command.title" = "curl コマンド";
+/* EN: Add a cookie */
+"cookies.add" = "Cookie を追加";
+/* EN: sent with -b */
+"cookies.asFlag" = "-b で送る";
+/* EN: sent as a Cookie header */
+"cookies.asHeader" = "Cookie ヘッダーで送る";
+/* EN: This request carries no cookies. */
+"cookies.empty" = "このリクエストは Cookie を持っていません。";
+/* EN: cookies.txt */
+"cookies.file" = "cookies.txt";
+/* EN: This is a file name, so curly leaves it alone. */
+"cookies.fileHint" = "これはファイル名なので、curly は手を加えません。";
+/* EN: name */
+"cookies.name" = "名前";
+/* EN: Remove these cookies */
+"cookies.removeAll" = "この Cookie をまとめて削除";
+/* EN: value */
+"cookies.value" = "値";
+/* EN: This is how the request proves who you are. A username and password get scrambled into one Authorization header; a token is sent in that same header after the word \"Bearer\". Either way it is just a header, which is why you can still see it in the Headers section. */
+"explanation.auth" = "リクエストが「あなたが誰か」を示す方法です。ユーザー名とパスワードは 1 つの Authorization ヘッダーにまとめられ、トークンは同じヘッダーに「Bearer」という語に続けて入ります。どちらにしてもただのヘッダーなので、ヘッダー欄にそのまま現れます。";
+/* EN: Signing in */
+"explanation.auth.title" = "サインイン";
+/* EN: The body is the content you are sending along with the request — the parcel rather than the label. GET requests usually have none; POST and PUT usually do. */
+"explanation.body" = "ボディはリクエストと一緒に送る中身です。荷札ではなく荷物そのものにあたります。GET には普通ボディがなく、POST や PUT には普通あります。";
+/* EN: Body */
+"explanation.body.title" = "ボディ";
+/* EN: Content-Type is the header that tells the server what kind of thing is in the body, so it knows how to read it — JSON, form fields, plain text, a file, and so on. */
+"explanation.contentType" = "Content-Type は、ボディに何が入っているかをサーバーに伝えるヘッダーです。JSON なのか、フォーム項目なのか、ただの文章なのか、ファイルなのかが分かるので、サーバーは読み方を決められます。";
+/* EN: Content-Type */
+"explanation.contentType.title" = "Content-Type";
+/* EN: Cookies are small notes a website asked your browser to keep and hand back on every visit. They are how a site remembers that you are signed in. They travel in a single header, one note after another. */
+"explanation.cookies" = "Cookie は、ウェブサイトがブラウザに預けて、訪れるたびに返してもらう小さなメモです。サイトがあなたのサインイン状態を覚えていられるのはこの仕組みのおかげです。1 つのヘッダーの中に、メモが順に並んで送られます。";
+/* EN: Cookies */
+"explanation.cookies.title" = "Cookie";
+/* EN: A form body is a list of name-and-value pairs, written the same way as a query string: name=value, joined by \"&\". It is what an ordinary web page form sends when you press a button. */
+"explanation.formBody" = "フォームのボディは名前と値の組の並びで、クエリ文字列と同じ書き方をします。name=value を「&」でつなげた形です。普通のウェブページでボタンを押したときに送られるのがこれです。";
+/* EN: Form fields */
+"explanation.formBody.title" = "フォーム項目";
+/* EN: Headers are extra lines of information attached to the request, like the label on a parcel. They say things like what kind of answer you can accept and what software is asking. Switch one off to see what the site does without it. */
+"explanation.headers" = "ヘッダーはリクエストに添える情報の行で、荷物に貼る荷札のようなものです。どんな返事を受け取れるか、どのソフトが尋ねているか、といったことを伝えます。ひとつ切ってみると、それが無いときサイトがどうするか分かります。";
+/* EN: Headers */
+"explanation.headers.title" = "ヘッダー";
+/* EN: JSON is a common way of writing structured data as text, using braces for objects and square brackets for lists. Most web APIs expect it. If it is laid out neatly here, it still arrives as one long line. */
+"explanation.json" = "JSON は、構造のあるデータを文字として書くための広く使われる書き方です。オブジェクトには波かっこ、リストには角かっこを使います。多くのウェブ API がこの形を期待します。ここで見やすく整形しても、送られるときは 1 行のままです。";
+/* EN: JSON */
+"explanation.json.title" = "JSON";
+/* EN: The method is the verb of the request: it says what you want done. GET means \"give me this\", POST usually means \"here is something new\", PUT and PATCH mean \"change this\", and DELETE means what it says. */
+"explanation.method" = "メソッドはリクエストの動詞で、何をしてほしいかを表します。GET は「これをください」、POST はたいてい「新しいものを渡します」、PUT と PATCH は「これを変えてください」、DELETE は文字どおり削除です。";
+/* EN: Method */
+"explanation.method.title" = "メソッド";
+/* EN: These are curl's own settings rather than parts of the request: how to handle redirects, whether to unzip the answer, how long to wait. Anything curly does not recognise is kept here untouched so nothing is lost. */
+"explanation.otherOptions" = "これらはリクエストの部品ではなく、curl 自身の設定です。リダイレクトをどう扱うか、返事を解凍するか、どれだけ待つかといったことです。curly が知らないものもそのまま残すので、失われるものはありません。";
+/* EN: Other options */
+"explanation.otherOptions.title" = "その他のオプション";
+/* EN: This is the finished command. Copy it, paste it into your terminal, and press return to run it. Send runs it here instead, which is handy, but the command is the thing worth keeping. Edit anything on the left and watch the matching part here change. */
+"explanation.output" = "できあがったコマンドです。コピーしてターミナルに貼り付け、Return を押せば実行できます。「送信」を押せばここで実行もできますが、残す値打ちがあるのはコマンドのほうです。左側を編集すると、対応する部分がここで変わります。";
+/* EN: The curl command */
+"explanation.output.title" = "curl コマンド";
+/* EN: The query string is the part of the address after the \"?\". It is a list of name-and-value pairs, joined by \"&\", used for things like search terms and page numbers. Spaces and other awkward characters get written as %20 and friends so they survive the trip. */
+"explanation.query" = "クエリ文字列はアドレスの「?」より後ろの部分です。名前と値の組を「&」でつないだ並びで、検索語やページ番号などに使われます。空白などの扱いにくい文字は %20 のような形に書き換えられ、無事に届くようになっています。";
+/* EN: Query string */
+"explanation.query.title" = "クエリ文字列";
+/* EN: A request is one message your computer sends to a website, asking it to do something. Everything below is a part of that message. curly's job is to write that message down so you can read it; Send will run it for you, but the command is still the thing to keep. */
+"explanation.request" = "リクエストは、あなたのコンピューターがウェブサイトに送る 1 通のメッセージで、何かをしてほしいと頼むものです。下にあるものはすべてそのメッセージの一部です。curly の仕事はそれを読める形に書き出すことで、「送信」を押せば代わりに実行もしますが、残すべきものはやはりコマンドです。";
+/* EN: The request */
+"explanation.request.title" = "リクエスト";
+/* EN: The web address says which machine to talk to and which thing on it you want. It is made of a scheme (https), a host (api.example.com), sometimes a port number, and a path (/v1/items). */
+"explanation.url" = "ウェブアドレスは、どの機械に話しかけ、その中のどれが欲しいのかを表します。スキーム（https）、ホスト（api.example.com）、ときどきポート番号、そしてパス（/v1/items）でできています。";
+/* EN: Web address */
+"explanation.url.title" = "ウェブアドレス";
+/* EN: By default curl prints what came back and nothing else. You can ask it for more: the response headers as well as the body, or the whole conversation including what your machine sent. Turning this up is the quickest way to see what a request actually looks like. */
+"explanation.verbosity" = "curl は既定では返ってきたものだけを表示します。もっと見せてもらうこともできます。ボディに加えてレスポンスヘッダーまで、あるいは自分の機械が送った内容も含めたやり取り全体です。ここを上げるのが、リクエストの実物を見るいちばん手早い方法です。";
+/* EN: How much to show */
+"explanation.verbosity.title" = "表示する量";
+/* EN: Add a header */
+"headers.add" = "ヘッダーを追加";
+/* EN: No headers yet. */
+"headers.empty" = "まだヘッダーがありません。";
+/* EN: Switch one off to see what the site does without it — nothing is lost. */
+"headers.hint" = "ひとつ切ってみると、それが無いときサイトがどうするか分かります。消えてしまうことはありません。";
+/* EN: Name */
+"headers.name" = "名前";
+/* EN: Value */
+"headers.value" = "値";
+/* EN: What is this? */
+"help.button" = "これは何？";
+/* EN: …or drop a command in */
+"import.dropHint" = "…またはコマンドをドロップ";
+/* EN: Paste here  ⌘V */
+"import.dropTarget" = "ここに貼り付け  ⌘V";
+/* EN: That did not look like a curl command. */
+"import.error.generic" = "curl コマンドではないようです。";
+/* EN: curly writes the command down. Your terminal runs it — or press Send once you have one. */
+"import.footer" = "curly はコマンドを書き出すだけです。実行するのはターミナル、あるいは「送信」です。";
+/* EN: Load an example */
+"import.loadExample" = "例を読み込む";
+/* EN: No developer tools to hand? */
+"import.noDevtools" = "開発者ツールが手元にありませんか？";
+/* EN: In your browser’s developer tools, right-click a request and choose “Copy as cURL”. Then press ⌘V here. */
+"import.subtitle" = "ブラウザの開発者ツールでリクエストを右クリックし、「Copy as cURL」を選びます。そのあと、ここで ⌘V を押してください。";
+/* EN: Paste a curl command */
+"import.title" = "curl コマンドを貼り付け";
+/* EN: Copy curl Command */
+"menu.copyCommand" = "curl コマンドをコピー";
+/* EN: Load an Example */
+"menu.loadExample" = "例を読み込む";
+/* EN: Paste */
+"menu.paste" = "ペースト";
+/* EN: Start Over */
+"menu.startOver" = "最初から";
+/* EN: Watch the Clipboard */
+"menu.watchClipboard" = "クリップボードを見張る";
+/* EN: Something else… */
+"method.custom" = "その他…";
+/* EN: PURGE */
+"method.customPrompt" = "PURGE";
+/* EN: curl works this out on its own */
+"method.implied" = "curl が自分で判断します";
+/* EN: Let curl choose whichever login scheme the server offers. */
+"option.--anyauth" = "サーバーが用意しているログイン方式のうち、どれを使うかを curl に選ばせます。";
+/* EN: Send the username and password the simple, standard way. */
+"option.--basic" = "ユーザー名とパスワードを、最も簡単で標準的な方法で送ります。";
+/* EN: Check the site's certificate against this list of trusted authorities. */
+"option.--cacert" = "サイトの証明書を、この信頼できる認証局の一覧と照らし合わせます。";
+/* EN: Prove who you are with this client certificate file. */
+"option.--cert" = "このクライアント証明書ファイルで本人であることを示します。";
+/* EN: Asks the server to send the page zipped up, which makes it arrive faster. curl unzips it for you. */
+"option.--compressed" = "ページを圧縮して送るようサーバーに頼みます。そのぶん速く届きます。curl が解凍してくれます。";
+/* EN: Give up if it takes longer than this many seconds just to reach the server. */
+"option.--connect-timeout" = "サーバーにたどり着くだけでこの秒数を超えたら諦めます。";
+/* EN: Pick up a half-finished download from this point. */
+"option.--continue-at" = "途中まで終わっているダウンロードを、この位置から再開します。";
+/* EN: After the request, write any cookies the server handed back into this file. */
+"option.--cookie-jar" = "リクエストのあと、サーバーが返してきた Cookie をこのファイルに書き込みます。";
+/* EN: Send the username and password using a challenge-and-response scheme. */
+"option.--digest" = "チャレンジとレスポンスの仕組みでユーザー名とパスワードを送ります。";
+/* EN: Ignore your personal curl settings file for this run. */
+"option.--disable" = "今回の実行では、あなた個人の curl 設定ファイルを無視します。";
+/* EN: Treat an error page from the server as a failure instead of printing it. */
+"option.--fail" = "サーバーからのエラーページを、表示せずに失敗として扱います。";
+/* EN: Send the data as a query string on the end of the web address instead of in the body of the request. */
+"option.--get" = "データをリクエストのボディではなく、ウェブアドレスの末尾のクエリ文字列として送ります。";
+/* EN: Treat {} and [] in the web address as ordinary characters rather than a list to expand. */
+"option.--globoff" = "ウェブアドレスの {} や [] を、展開すべき並びではなく普通の文字として扱います。";
+/* EN: Ask only for the headers — the label on the parcel — and not the contents. */
+"option.--head" = "中身ではなくヘッダーだけ、つまり荷札だけを求めます。";
+/* EN: Insist on the older HTTP/1.1 version of the protocol. */
+"option.--http1.1" = "古い HTTP/1.1 版のプロトコルを使うよう指定します。";
+/* EN: Ask to use HTTP/2, a faster version of the same protocol. */
+"option.--http2" = "同じプロトコルのより速い版、HTTP/2 を使うよう求めます。";
+/* EN: Ask to use HTTP/3, the newest version of the protocol. */
+"option.--http3" = "最も新しい版である HTTP/3 を使うよう求めます。";
+/* EN: Print the response headers above the response body. */
+"option.--include" = "レスポンスヘッダーをボディの上に表示します。";
+/* EN: Carry on even if the site's security certificate does not check out. Handy for local testing, risky anywhere else. */
+"option.--insecure" = "サイトのセキュリティ証明書が確認できなくても続行します。手元での試験には便利ですが、それ以外では危険です。";
+/* EN: Send the request from this particular network connection on your machine. */
+"option.--interface" = "あなたの機械の、この特定のネットワーク接続からリクエストを送ります。";
+/* EN: Only use the older style of internet address. */
+"option.--ipv4" = "古い形式のインターネットアドレスだけを使います。";
+/* EN: Only use the newer style of internet address. */
+"option.--ipv6" = "新しい形式のインターネットアドレスだけを使います。";
+/* EN: The private key that goes with the client certificate. */
+"option.--key" = "クライアント証明書と対になる秘密鍵です。";
+/* EN: Slow the transfer down to at most this speed. */
+"option.--limit-rate" = "転送の速度をこの値までに抑えます。";
+/* EN: If the server says \"that moved, look over there\", follow it to the new address instead of stopping. */
+"option.--location" = "サーバーが「それは移動しました、あちらを見てください」と答えたら、止まらずに新しいアドレスへたどります。";
+/* EN: Give up if the whole request takes longer than this many seconds. */
+"option.--max-time" = "リクエスト全体がこの秒数を超えたら諦めます。";
+/* EN: Work out the login scheme with the server rather than picking one up front. */
+"option.--negotiate" = "ログイン方式を前もって決めず、サーバーとやり取りして決めます。";
+/* EN: Everything after this belongs to a second, separate request. */
+"option.--next" = "これより後ろはすべて、2 つめの別のリクエストに属します。";
+/* EN: Close the connection after this request instead of holding it open. */
+"option.--no-keepalive" = "接続を開いたままにせず、このリクエストのあとで閉じます。";
+/* EN: Send this token as proof of who you are. */
+"option.--oauth2-bearer" = "このトークンを本人である証として送ります。";
+/* EN: Write what comes back into a file with this name instead of printing it. */
+"option.--output" = "返ってきたものを表示せず、この名前のファイルに書き込みます。";
+/* EN: Run several transfers at the same time. */
+"option.--parallel" = "複数の転送を同時に実行します。";
+/* EN: Send the path exactly as written, without tidying up any . or .. in it. */
+"option.--path-as-is" = "パスの中の . や .. を整理せず、書かれたとおりに送ります。";
+/* EN: Restrict which kinds of address curl is willing to fetch. */
+"option.--proto" = "curl が取りにいくアドレスの種類を限定します。";
+/* EN: Send the request through this middle-man server instead of straight to the site. */
+"option.--proxy" = "サイトに直接ではなく、この仲介サーバーを通してリクエストを送ります。";
+/* EN: Ask for only part of the file, counted in bytes. */
+"option.--range" = "ファイルの一部だけを、バイト数で指定して求めます。";
+/* EN: The page you were supposedly on when you followed a link here. */
+"option.--referer" = "ここへのリンクをたどったとき、あなたがいたことになるページです。";
+/* EN: Save the response into a file named after the last part of the web address. */
+"option.--remote-name" = "ウェブアドレスの最後の部分を名前にしたファイルへ、レスポンスを保存します。";
+/* EN: Pretend a host name points at a particular address, without changing any settings. */
+"option.--resolve" = "設定を変えずに、あるホスト名が特定のアドレスを指しているものとして扱います。";
+/* EN: If the request fails, try it again up to this many times. */
+"option.--retry" = "リクエストが失敗したら、この回数まで試し直します。";
+/* EN: Still show errors even when things are otherwise quiet. */
+"option.--show-error" = "ほかを静かにしていても、エラーだけは表示します。";
+/* EN: Hide the progress meter and error messages. */
+"option.--silent" = "進捗表示とエラーメッセージを隠します。";
+/* EN: Insist on at least this version of the encryption used to protect the connection. */
+"option.--tlsv1.2" = "接続を守る暗号化について、少なくともこの版を使うよう指定します。";
+/* EN: Insist on at least this version of the encryption used to protect the connection. */
+"option.--tlsv1.3" = "接続を守る暗号化について、少なくともこの版を使うよう指定します。";
+/* EN: Write a very detailed log of the request into this file. */
+"option.--trace" = "リクエストのきわめて詳しい記録をこのファイルに書き込みます。";
+/* EN: Send the contents of this file as the body of the request. */
+"option.--upload-file" = "このファイルの中身をリクエストのボディとして送ります。";
+/* EN: The name the request introduces itself with. Sites use it to tell browsers apart. */
+"option.--user-agent" = "リクエストが名乗る名前です。サイトはこれでブラウザを見分けます。";
+/* EN: Print the whole conversation with the server, which is a good way to see what is really sent. */
+"option.--verbose" = "サーバーとのやり取りをすべて表示します。実際に何が送られているかを見るのに向いています。";
+/* EN: After the request, print a little summary you describe here. */
+"option.--write-out" = "リクエストのあと、ここで指定した短いまとめを表示します。";
+/* EN: Add an option */
+"options.add" = "オプションを追加";
+/* EN: Something else… */
+"options.addOther" = "その他…";
+/* EN: No extra curl options are set. */
+"options.empty" = "追加の curl オプションはありません。";
+/* EN: curly does not know this flag, so it is passed along exactly as written. */
+"options.unknown" = "curly はこのフラグを知りませんが、書かれたとおりにそのまま渡します。";
+/* EN: value */
+"options.value" = "値";
+/* EN: Add a query parameter */
+"query.add" = "クエリパラメータを追加";
+/* EN: This address has nothing after the “?” yet. */
+"query.empty" = "このアドレスにはまだ「?」より後ろがありません。";
+/* EN: name */
+"query.name" = "名前";
+/* EN: value */
+"query.value" = "値";
+/* EN: Cancel */
+"response.cancel" = "キャンセル";
+/* EN: Close this pane */
+"response.close" = "このペインを閉じる";
+/* EN: Copy */
+"response.copy" = "コピー";
+/* EN: Copy whatever this tab is showing */
+"response.copyHelp" = "いま表示しているタブの内容をコピーします";
+/* EN: The answer had no body — just headers. */
+"response.emptyBody" = "返事にボディはなく、ヘッダーだけでした。";
+/* EN: The command itself is still fine — copy it and try it in your terminal to compare. */
+"response.errorHint" = "コマンド自体に問題はありません。コピーしてターミナルで試し、比べてみてください。";
+/* EN: The request did not go through */
+"response.failed" = "リクエストは届きませんでした";
+/* EN: Add %@ */
+"response.hint.add" = "%@ を追加";
+/* EN: Your command would not print these in a terminal. Add -i and it will. */
+"response.hint.headers" = "いまのコマンドでは、ターミナルにこれは表示されません。-i を足せば表示されます。";
+/* EN: Your command would not print this in a terminal. Add -v and it will. */
+"response.hint.sent" = "いまのコマンドでは、ターミナルにこれは表示されません。-v を足せば表示されます。";
+/* EN: Sending… */
+"response.sending" = "送信中…";
+/* EN: Body */
+"response.tab.body" = "ボディ";
+/* EN: Headers (%d) */
+"response.tab.headers" = "ヘッダー（%d）";
+/* EN: What was sent */
+"response.tab.sent" = "送った内容";
+/* EN: %d ms */
+"response.took" = "%d ミリ秒";
+/* EN: curly sent this itself and cannot do %@. Copy the command and run it in your terminal if those matter here. */
+"response.unsupported" = "curly 自身が送ったため、%@ は実行できません。それが必要な場合は、コマンドをコピーしてターミナルで実行してください。";
+/* EN: Remove this row */
+"row.remove" = "この行を削除";
+/* EN: Include this in the request */
+"row.toggle" = "この項目をリクエストに含める";
+/* EN: Signing in */
+"section.auth" = "サインイン";
+/* EN: Body */
+"section.body" = "ボディ";
+/* EN: Cookies */
+"section.cookies" = "Cookie";
+/* EN: Headers */
+"section.headers" = "ヘッダー";
+/* EN: Method */
+"section.method" = "メソッド";
+/* EN: Other options */
+"section.options" = "その他のオプション";
+/* EN: Query string */
+"section.query" = "クエリ文字列";
+/* EN: Web address */
+"section.url" = "ウェブアドレス";
+/* EN: How much to show */
+"section.verbosity" = "表示する量";
+/* EN: “%@” is not an address curly can send to. */
+"send.error.address" = "「%@」は curly が送信できるアドレスではありません。";
+/* EN: Cancelled. */
+"send.error.cancelled" = "キャンセルしました。";
+/* EN: Nothing answered at that address and port. */
+"send.error.connect" = "そのアドレスとポートでは応答がありませんでした。";
+/* EN: curly could not work out what to send. */
+"send.error.generic" = "curly は何を送ればよいか判断できませんでした。";
+/* EN: That host name could not be looked up. Is it spelled right? */
+"send.error.host" = "そのホスト名は見つかりませんでした。綴りは合っていますか？";
+/* EN: That address did not answer with HTTP. */
+"send.error.notHTTP" = "そのアドレスは HTTP で応答しませんでした。";
+/* EN: This machine does not seem to be online. */
+"send.error.offline" = "この機械はオンラインではないようです。";
+/* EN: The server took too long to answer. */
+"send.error.timeout" = "サーバーの応答に時間がかかりすぎました。";
+/* EN: The site's security certificate could not be trusted. Adding -k tells curl to carry on anyway, which is fine for a local server and risky anywhere else. */
+"send.error.tls" = "サイトのセキュリティ証明書を信頼できませんでした。-k を足すと curl はそれでも続行します。手元のサーバーなら問題ありませんが、それ以外では危険です。";
+/* EN: Host */
+"url.host" = "ホスト";
+/* EN: Path */
+"url.path" = "パス";
+/* EN: Port */
+"url.port" = "ポート";
+/* EN: none */
+"url.portPrompt" = "なし";
+/* EN: Scheme */
+"url.scheme" = "スキーム";
+/* EN: Write the address with --url */
+"url.useURLFlag" = "アドレスを --url で書く";
+/* EN: https://api.example.com/v1/items */
+"url.whole" = "https://api.example.com/v1/items";
+/* EN: Answer + headers */
+"verbosity.headers" = "返事＋ヘッダー";
+/* EN: Just the answer */
+"verbosity.normal" = "返事だけ";
+/* EN: -i — the response headers are printed above the body. */
+"verbosity.note.headers" = "-i — レスポンスヘッダーがボディの上に表示されます。";
+/* EN: No flag needed: curl prints what came back and nothing else. */
+"verbosity.note.normal" = "フラグは不要です。curl は返ってきたものだけを表示します。";
+/* EN: -s — curl keeps its progress meter and errors to itself. */
+"verbosity.note.quiet" = "-s — curl は進捗表示とエラーを自分の内に留めます。";
+/* EN: -v — the whole conversation, including what was sent. */
+"verbosity.note.verbose" = "-v — 送った内容も含めたやり取り全体です。";
+/* EN: Quiet */
+"verbosity.quiet" = "静かに";
+/* EN: Everything */
+"verbosity.verbose" = "すべて";

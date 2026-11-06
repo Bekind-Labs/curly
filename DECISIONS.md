@@ -97,6 +97,16 @@ SwiftPM from a `Makefile` with no Xcode project. So the catalog is a plain
 checked by a test that fails if it drifts. Every user-facing string goes through
 `L("key", "English")`, so swapping in `.xcstrings` later is a mechanical change.
 
+Japanese and Korean are translated in `ja.lproj` and `ko.lproj`, and those
+files are the source of truth for their own text — `make strings` only keeps
+the key set in step. Each translated entry carries, in a comment, the English
+it was translated from. When that English changes the entry is marked and a
+test fails, because a translation whose original moved on is worse than a
+missing one: a missing string falls back to English at runtime, while a stale
+one is confidently wrong. A separate test checks that `%@` and `%d`
+placeholders survive translation, since losing one crashes `String(format:)`
+rather than merely reading oddly.
+
 The generator reads the Swift source as text rather than compiling anything, so
 `make strings` needs nothing but Python and works on a bare checkout. Reading
 Swift with regular expressions is only safe because `StringCatalogTests`

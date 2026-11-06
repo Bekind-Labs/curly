@@ -31,7 +31,7 @@ struct ImportView: View {
 
             examples
             Spacer()
-            Text(L("import.footer", "curly never sends anything. Your terminal does that bit."))
+            Text(L("import.footer", "curly writes the command down. Your terminal runs it — or press Send once you have one."))
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .padding(.bottom, 18)

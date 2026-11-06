@@ -72,6 +72,9 @@ Copy-as-cURL blob and you need to find the one header that matters.
   choice, so you can set how much the command prints without remembering which
   letter does what.
 
+curly speaks English, Japanese and Korean, following whatever your Mac is set
+to. Every user-facing string lives in a catalog, including the explanations.
+
 Nothing you type is autocorrected. macOS's curly quotes would silently stop a
 JSON body being JSON, so every automatic substitution is off; if you paste text
 that already has them, curly points at it and offers to straighten it.

@@ -90,7 +90,7 @@
 "import.dropHint" = "…or drop a command in";
 "import.dropTarget" = "Paste here  ⌘V";
 "import.error.generic" = "That did not look like a curl command.";
-"import.footer" = "curly never sends anything. Your terminal does that bit.";
+"import.footer" = "curly writes the command down. Your terminal runs it — or press Send once you have one.";
 "import.loadExample" = "Load an example";
 "import.noDevtools" = "No developer tools to hand?";
 "import.subtitle" = "In your browser’s developer tools, right-click a request and choose “Copy as cURL”. Then press ⌘V here.";

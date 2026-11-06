@@ -6,3 +6,4 @@ build/
 curly.app/
 dist/
 unpacked/
+__pycache__/
