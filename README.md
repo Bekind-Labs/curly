@@ -1,3 +1,5 @@
+[English](README.md) | [日本語](README.ja.md) | [한국어](README.ko.md)
+
 # curly
 
 **A Mac app that takes a `curl` command apart so you can see what's in it.**
@@ -18,7 +20,7 @@ Then you copy the command back out and run it in your terminal — or press
 
 ### [⬇ Download for macOS](https://github.com/Bekind-Labs/curly/releases/latest)
 
-macOS 14 or later · universal (Apple silicon and Intel) · ~1.8 MB · free
+macOS 14 or later · universal (Apple silicon and Intel) · free
 
 Signed with Bekind Labs' Developer ID and notarised by Apple, so it opens
 without a fight.
@@ -217,5 +219,7 @@ clipboard, and only to offer an import — there's a preference to turn that off
 ## Contributing
 
 Issues and pull requests are welcome. `make test` should be green, and
-`make strings` regenerates the localisation catalog if you add any user-facing
-text. CI runs the library tests on Linux and builds the app on macOS.
+`make strings` regenerates the string catalogs if you add any user-facing text.
+A translation whose English has changed since it was written is flagged and has
+to be updated before the tests pass. CI runs the library tests on Linux and
+builds the app on macOS.
