@@ -19,6 +19,7 @@ public enum Explanation: String, CaseIterable, Sendable {
     case contentType
     case auth
     case otherOptions
+    case verbosity
     case output
 
     /// The key to look up in the app's string catalog.
@@ -38,6 +39,7 @@ public enum Explanation: String, CaseIterable, Sendable {
         case .contentType: return "Content-Type"
         case .auth: return "Signing in"
         case .otherOptions: return "Other options"
+        case .verbosity: return "How much to show"
         case .output: return "The curl command"
         }
     }
@@ -48,8 +50,9 @@ public enum Explanation: String, CaseIterable, Sendable {
         case .request:
             return """
             A request is one message your computer sends to a website, asking it \
-            to do something. Everything below is a part of that message. curly \
-            only writes the message down — your terminal is what actually sends it.
+            to do something. Everything below is a part of that message. curly's \
+            job is to write that message down so you can read it; Send will run \
+            it for you, but the command is still the thing to keep.
             """
         case .method:
             return """
@@ -122,11 +125,19 @@ public enum Explanation: String, CaseIterable, Sendable {
             Anything curly does not recognise is kept here untouched so nothing \
             is lost.
             """
+        case .verbosity:
+            return """
+            By default curl prints what came back and nothing else. You can ask \
+            it for more: the response headers as well as the body, or the whole \
+            conversation including what your machine sent. Turning this up is \
+            the quickest way to see what a request actually looks like.
+            """
         case .output:
             return """
             This is the finished command. Copy it, paste it into your terminal, \
-            and press return to actually send the request. Edit anything on the \
-            left and watch the matching part here change.
+            and press return to run it. Send runs it here instead, which is \
+            handy, but the command is the thing worth keeping. Edit anything on \
+            the left and watch the matching part here change.
             """
         }
     }

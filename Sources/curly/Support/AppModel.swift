@@ -26,6 +26,15 @@ final class AppModel: ObservableObject {
     /// The tokens that just changed, flashed briefly so the change is visible.
     @Published private(set) var flashedRef: ElementRef?
 
+    // MARK: Sending
+
+    /// What came back from the last Send, if any. Copying is still the primary
+    /// action; this pane only appears once somebody has asked for it.
+    @Published var response: SentResponse?
+    @Published var sendError: String?
+    @Published var isSending = false
+    private var sendTask: Task<Void, Never>?
+
     @Published var importError: String?
     /// Set when the clipboard holds a curl command we have not imported yet.
     @Published var clipboardOffer: String?
@@ -80,7 +89,72 @@ final class AppModel: ObservableObject {
         importCommand(example.command)
     }
 
+    /// Actually performs the request. The only part of curly that uses the
+    /// network, and only ever because the button was pressed.
+    func send() {
+        guard !isSending else { return }
+        sendError = nil
+
+        let plan: RequestPlan
+        do {
+            plan = try RequestPlanner.plan(for: request)
+        } catch {
+            sendError = (error as? CustomStringConvertible).map(\.description)
+                ?? L("send.error.generic", "curly could not work out what to send.")
+            response = nil
+            return
+        }
+
+        isSending = true
+        sendTask = Task {
+            do {
+                let result = try await RequestSender.send(plan)
+                if !Task.isCancelled {
+                    self.response = result
+                    self.sendError = nil
+                }
+            } catch {
+                if !Task.isCancelled {
+                    self.response = nil
+                    self.sendError = (error as? CustomStringConvertible).map(\.description)
+                        ?? error.localizedDescription
+                }
+            }
+            self.isSending = false
+        }
+    }
+
+    func cancelSend() {
+        sendTask?.cancel()
+        sendTask = nil
+        isSending = false
+    }
+
+    func dismissResponse() {
+        cancelSend()
+        response = nil
+        sendError = nil
+    }
+
+    /// True once there is something to show in the pane underneath.
+    var showsResponsePane: Bool {
+        isSending || response != nil || sendError != nil
+    }
+
+    /// How much of the exchange to show, which is the same `-s`/`-i`/`-v`
+    /// setting the command carries.
+    var verbosity: Verbosity {
+        get { request.verbosity }
+        set {
+            request.verbosity = newValue
+            flash(.body)
+        }
+    }
+
     func startOver() {
+        cancelSend()
+        response = nil
+        sendError = nil
         request = CurlRequest()
         hasImported = false
         importError = nil

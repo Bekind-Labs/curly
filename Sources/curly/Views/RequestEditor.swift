@@ -15,6 +15,7 @@ struct RequestEditor: View {
                 AuthSection()
                 BodySection()
                 OptionsSection()
+                VerbositySection()
             }
             .padding(16)
         }

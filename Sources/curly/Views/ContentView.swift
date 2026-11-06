@@ -13,11 +13,15 @@ struct ContentView: View {
                 Divider()
             }
             if model.hasImported {
-                HSplitView {
-                    RequestEditor()
-                        .frame(minWidth: 420, idealWidth: 620)
-                    CommandPane()
-                        .frame(minWidth: 340, idealWidth: 520)
+                if model.showsResponsePane {
+                    VSplitView {
+                        editor
+                            .frame(minHeight: 260, idealHeight: 460)
+                        ResponsePane()
+                            .frame(minHeight: 160, idealHeight: 260)
+                    }
+                } else {
+                    editor
                 }
             } else {
                 ImportView()
@@ -27,6 +31,15 @@ struct ContentView: View {
             NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
         ) { _ in
             model.windowBecameActive()
+        }
+    }
+
+    private var editor: some View {
+        HSplitView {
+            RequestEditor()
+                .frame(minWidth: 420, idealWidth: 620)
+            CommandPane()
+                .frame(minWidth: 340, idealWidth: 520)
         }
     }
 }

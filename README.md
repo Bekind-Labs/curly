@@ -13,7 +13,8 @@ method, address, query string, headers, cookies, body, auth. Change any of them
 and the command rewrites itself on the right, with the tokens you just touched
 lit up — so you can see which field produces which piece of the command.
 
-Then you copy the command back out and run it in your terminal.
+Then you copy the command back out and run it in your terminal — or press
+**Send** and see the answer in a pane underneath, pretty-printed.
 
 ### [⬇ Download for macOS](https://github.com/Bekind-Labs/curly/releases/latest)
 
@@ -23,23 +24,29 @@ macOS 14 or later · universal (Apple silicon and Intel) · ~1.8 MB · free
 > refuse to open it on a double-click. Right-click it in the Finder and choose
 > **Open**, then confirm. See [Installing](#installing) if you'd rather not.
 
-## curly never sends anything
+## The command is the point; Send is a convenience
 
-It's a curl *editor*, not an HTTP client. There is no Send button, no
-networking code in the project at all, and nothing to sign into.
+curly is a curl *editor* first. **Copy** is the primary action, and the thing
+you walk away with is a line of text you can read, save, paste into a ticket,
+and run anywhere.
 
-That's the point. It was built for pairing with developers who don't know HTTP
-yet, and if the app sends the request then the app is the thing that works —
-HTTP stays a black box behind someone else's UI. Leaving the sending to the
-terminal keeps the command the real artifact: a line of text you can read,
-save, paste into a ticket, and run anywhere.
+That ordering is deliberate. It was built for pairing with developers who don't
+know HTTP yet, and if the app is the only thing that can run the request then
+HTTP stays a black box behind someone else's UI. The command being the artifact
+is what makes the lesson portable.
 
-It's also why there's no "works in the app but not in my shell" class of bug,
-no credential store, and no proxy settings to get wrong.
+But round-tripping through a terminal to check one header gets old, so there is
+a **Send** button too. It runs the request, shows the answer in a pane
+underneath, and does its best to behave exactly as curl would — it won't follow
+redirects unless the command says `-L`, and it only skips certificate checks
+when the command says `-k`, which it tells you about.
 
-The side effect is that curly is useful outside teaching too — any time someone
-hands you a forty-line Copy-as-cURL blob and you need to find the one header
-that matters.
+How much it shows follows the same `-s`/`-i`/`-v` setting that's in the
+command, so what you asked for and what you see never drift apart. Turn it up
+and you get the whole conversation, request headers included.
+
+It's useful outside teaching too — any time someone hands you a forty-line
+Copy-as-cURL blob and you need to find the one header that matters.
 
 ## Every part of the request is a thing you can poke
 
@@ -60,6 +67,9 @@ that matters.
 - **Other options** — `--compressed`, `-L`, `-k` and the rest as toggles, each
   with one line of plain English. Flags curly doesn't recognise are kept exactly
   as written and shown here too. Nothing is ever silently dropped.
+- **How much to show** — curl's output flags (`-s`, `-i`, `-v`) as a single
+  choice, which drives both the command and how much of the exchange the
+  response pane shows.
 
 Every section has a **?** that explains, in two or three jargon-free sentences,
 what that part of an HTTP request actually is.
@@ -136,6 +146,12 @@ Two targets in one SwiftPM package, no third-party dependencies:
     the command came from which field. That map is what drives the highlighting.
 - **`curly`** — the SwiftUI app, which is a view onto one `CurlRequest`.
 
+`RequestPlanner` lives in `CurlKit` and works out what Send would actually put
+on the wire — method, address, headers, body — as a plain value, without
+opening a socket. That keeps the fiddly part (which flags change the body, what
+the implied `Content-Type` is, where cookies end up) testable on Linux, and
+leaves the app with a thin `URLSession` call.
+
 Every merge to `main` that passes CI is published as a release automatically,
 versioned by date: `2026.11.05.42` is that day's 42nd CI run.
 
@@ -145,12 +161,18 @@ written down in [DECISIONS.md](DECISIONS.md).
 ## Questions you might reasonably have
 
 **Why not Postman / Insomnia / Bruno / HTTPie?**
-They all send requests, which is the one thing curly deliberately won't do.
-They're also built for people who already understand what a request *is*. curly
-has one screen, no accounts, no workspaces, no sync, and explains itself.
+Those are built for people who already understand what a request *is*, and they
+treat the request as something that lives inside the app. In curly the curl
+command is the document: it goes in by paste and comes out by copy, and Send is
+a convenience on top rather than the only way to run anything. One screen, no
+accounts, no workspaces, no sync, and every section explains itself.
 
-**Will it ever send requests?**
-No. That's the design, not a missing feature.
+**Does Send behave the same as running the command?**
+That's the intent, and the translation from flags to an actual request is
+tested. It follows redirects only with `-L` and skips certificate checks only
+with `-k`. Some flags it can't honour when sending in-process — `--proxy` and
+`--limit-rate`, for instance — and rather than quietly ignoring them it lists
+them in the response pane. When in doubt, copy the command and run it.
 
 **Linux or Windows?**
 The app is SwiftUI and macOS-only. `CurlKit` — the tokenizer, parser, model and
@@ -163,9 +185,14 @@ Notarisation needs a paid Apple Developer account. If that matters to you,
 building from source is a one-liner.
 
 **Does it phone home?**
-No. No networking code, no analytics, no update check. The only thing it reads
-is your clipboard, and only to offer an import — there's a preference to turn
-that off.
+No analytics, no update check, no telemetry. The only requests it ever makes
+are the ones you press Send on, to the address in your own command, and nothing
+about them is stored or sent anywhere else. The only thing it reads is your
+clipboard, and only to offer an import — there's a preference to turn that off.
+
+## Licence
+
+[MIT](LICENSE).
 
 ## Contributing
 

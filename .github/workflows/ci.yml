@@ -152,8 +152,8 @@ jobs:
 
           A curl editor for teaching HTTP. Paste a “Copy as cURL” command from
           your browser’s developer tools, see it broken into its parts, edit
-          them, and copy the command back out. curly never sends requests —
-          your terminal does that bit.
+          them, and copy the command back out — or press Send and see the
+          answer underneath. Copying the command is still the point.
 
           ### Installing
 

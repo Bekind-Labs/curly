@@ -61,6 +61,21 @@ struct CommandPane: View {
             .tint(model.didJustCopy ? .green : .accentColor)
             .animation(.easeOut(duration: 0.18), value: model.didJustCopy)
 
+            Button {
+                model.send()
+            } label: {
+                Label(
+                    model.isSending
+                        ? L("command.sending", "Sending…")
+                        : L("command.send", "Send"),
+                    systemImage: "paperplane"
+                )
+            }
+            .controlSize(.large)
+            .disabled(model.isSending)
+            .keyboardShortcut(.return, modifiers: .command)
+            .help(L("command.sendHelp", "Run this request now and show what comes back. ⌘↩"))
+
             Button(L("command.startOver", "Start over")) { model.startOver() }
                 .controlSize(.large)
         }

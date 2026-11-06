@@ -122,7 +122,48 @@ collide, and say something true (when this was built) instead of something
 invented (how big a change it was). Re-running a build updates the release it
 already made rather than failing on the existing tag.
 
-## No networking, no response rendering, no credential storage
+## Send exists, but Copy is still the primary action
 
-Deliberately. curly writes a command down; the terminal sends it. Adding a
-"Send" button would take away the reason the lesson works.
+curly started with no networking at all, on the grounds that if the app sends
+the request then the app is the thing that works and HTTP stays a black box.
+That argument holds for the *ordering* of the two buttons, but not for leaving
+Send out: checking one header should not need a round trip through a terminal.
+
+So Copy is the prominent button and Send sits next to it, and the command
+remains the artifact. Nothing is stored: no credential store, no history, no
+session reuse, and an ephemeral `URLSession` with cookie handling switched off
+so that what is sent is exactly what the command says.
+
+## Sending is planned in CurlKit and performed in the app
+
+`RequestPlanner` turns a `CurlRequest` into a `RequestPlan` — method, address,
+headers, body, and the few flags that change how it goes out — and opens no
+sockets. The app turns that plan into a `URLRequest` in about ten lines.
+
+The split means the part that is easy to get wrong (which flags move data into
+the query string, when curl adds a `Content-Type` for you, how
+`--data-urlencode` escapes) is pure and tested on Linux, while the part that
+cannot be unit-tested is too small to hide a bug in.
+
+Two curl behaviours need a session delegate, because they cannot be expressed
+on a `URLRequest`: `URLSession` follows redirects by default and curl does not,
+so without `-L` redirects are refused; and `-k` is honoured only when asked
+for, since silently accepting bad certificates would be a poor thing for a
+teaching tool to do quietly.
+
+Flags that cannot be honoured in-process — `--proxy`, `--limit-rate` and the
+like — are listed in the response pane rather than ignored. Sending is a
+convenience, and it says where it stops being faithful.
+
+## Verbosity is one setting, not two
+
+How much the response pane shows is not a pane preference: it reads
+`CurlRequest.verbosity`, which is a projection over curl's own `-s`, `-i` and
+`-v` flags. Choosing "Everything" in the form writes `-v` into the command, and
+a pasted command with `-v` arrives with the setting already made.
+
+The alternative — a view control that does not touch the command — would mean
+the app showing you something your command would not, which is exactly the kind
+of quiet disagreement the rest of the design works to avoid.
+
+## No response history, no credential storage
