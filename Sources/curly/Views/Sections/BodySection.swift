@@ -98,9 +98,38 @@ struct BodySection: View {
             )
             .frame(minHeight: 120, maxHeight: 260)
 
+            if SmartQuotes.arePresent(in: model.request.bodyText) {
+                smartQuoteWarning
+            }
+
             if isJSONish {
                 jsonControls
             }
+        }
+    }
+
+    /// Pasted text can arrive with curly quotes already in it, from a document
+    /// or a chat window. curly will not quietly rewrite what you pasted, but
+    /// it will point at it and offer.
+    private var smartQuoteWarning: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.bubble")
+                .foregroundStyle(.orange)
+            Text(
+                SmartQuotes.straighteningWouldFixJSON(model.request.bodyText)
+                    ? L("body.smartQuotes.breaksJSON", "There are curly quotes in here, which is why this is not valid JSON.")
+                    : L("body.smartQuotes.present", "There are curly quotes in here. Servers rarely want those.")
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            Spacer()
+            Button(L("body.smartQuotes.fix", "Straighten them")) {
+                model.request.setBodyText(SmartQuotes.straighten(model.request.bodyText))
+                model.flash(.body)
+            }
+            .buttonStyle(.borderless)
+            .font(.callout)
         }
     }
 
@@ -240,40 +269,31 @@ struct BodySection: View {
 }
 
 /// A multi-line editor that reports focus and flashes on change, like
-/// `TrackedField` does for one-liners.
+/// `TrackedField` does for one-liners — and that never rewrites what you type.
 struct TrackedEditor: View {
     @Binding var text: String
     let ref: ElementRef
 
     @EnvironmentObject var model: AppModel
-    @FocusState var isFocused: Bool
 
     var body: some View {
-        TextEditor(text: $text)
-            .font(Theme.smallMonospaced)
-            .focused($isFocused)
-            .scrollContentBackground(.hidden)
-            .padding(6)
-            .background(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(Color(nsColor: .textBackgroundColor))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
-            )
-            .onChange(of: isFocused) { _, focused in
-                if focused {
-                    model.focus(ref)
-                } else if model.focusedRef == ref {
-                    model.focus(nil)
-                }
+        PlainTextEditor(text: $text) { isEditing in
+            if isEditing {
+                model.focus(ref)
+            } else if model.focusedRef == ref {
+                model.focus(nil)
             }
-            .onChange(of: text) { _, _ in
-                model.flash(ref)
-            }
-            .onHover { inside in
-                if inside, !isFocused { model.focus(ref) }
-            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(Color(nsColor: .textBackgroundColor))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
+        )
+        .onChange(of: text) { _, _ in
+            model.flash(ref)
+        }
     }
 }

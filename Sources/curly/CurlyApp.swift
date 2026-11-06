@@ -1,9 +1,28 @@
 import CurlKit
+import Foundation
 import SwiftUI
 
 @main
 struct CurlyApp: App {
     @StateObject private var model = AppModel()
+
+    init() {
+        // macOS helpfully turns "a" into “a” as you type. In a request body
+        // that silently stops it being JSON, and in a header value it sends
+        // bytes nobody meant. AppKit reads these when it builds a text view,
+        // so they have to be set before any window exists. This writes to
+        // curly's own preferences, not yours system-wide.
+        for key in [
+            "NSAutomaticQuoteSubstitutionEnabled",
+            "NSAutomaticDashSubstitutionEnabled",
+            "NSAutomaticTextReplacementEnabled",
+            "NSAutomaticSpellingCorrectionEnabled",
+            "NSAutomaticPeriodSubstitutionEnabled",
+            "NSAutomaticCapitalizationEnabled",
+        ] {
+            UserDefaults.standard.set(false, forKey: key)
+        }
+    }
 
     var body: some Scene {
         WindowGroup {

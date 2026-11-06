@@ -32,6 +32,9 @@
 "body.note.urlencoded" = "Each piece is escaped by curl before it is sent.";
 "body.partValue" = "name=value";
 "body.prettyPrint" = "Lay it out";
+"body.smartQuotes.breaksJSON" = "There are curly quotes in here, which is why this is not valid JSON.";
+"body.smartQuotes.fix" = "Straighten them";
+"body.smartQuotes.present" = "There are curly quotes in here. Servers rarely want those.";
 "command.copied" = "Copied — now paste it in your terminal";
 "command.copy" = "Copy command";
 "command.send" = "Send";

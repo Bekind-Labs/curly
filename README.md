@@ -72,6 +72,10 @@ Copy-as-cURL blob and you need to find the one header that matters.
   choice, which drives both the command and how much of the exchange the
   response pane shows.
 
+Nothing you type is autocorrected. macOS's curly quotes would silently stop a
+JSON body being JSON, so every automatic substitution is off; if you paste text
+that already has them, curly points at it and offers to straighten it.
+
 Every section has a **?** that explains, in two or three jargon-free sentences,
 what that part of an HTTP request actually is.
 

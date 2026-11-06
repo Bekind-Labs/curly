@@ -192,4 +192,22 @@ The workflow degrades rather than breaking: with no signing secrets configured
 it builds ad-hoc as before, and the release notes say which kind of build the
 reader is downloading instead of asserting one of them.
 
+## The text fields do not autocorrect anything
+
+macOS substitutes curly quotes for straight ones as you type. In a letter that
+is a courtesy; in a JSON body it silently stops the text being JSON, and in a
+header value it sends bytes nobody meant. Every automatic substitution is
+therefore switched off, in curly's own preferences domain rather than system
+wide, before any window exists.
+
+SwiftUI's `TextEditor` offers no way to say this, so the body editor is an
+`NSTextView` wrapped by hand with rich text, substitutions, spelling, grammar
+and data detection all turned off.
+
+Text can still arrive already curled, pasted out of a document. curly does not
+rewrite a paste behind the reader's back — it says what it found and offers a
+button, and when the body is invalid JSON *because* of the quotes it says that
+too. Only the quote characters are straightened: an em dash in a body is far
+more likely to be the author's than the keyboard's.
+
 ## No response history, no credential storage
