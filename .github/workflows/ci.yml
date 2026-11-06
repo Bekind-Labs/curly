@@ -40,6 +40,14 @@ jobs:
     outputs:
       version: ${{ steps.name.outputs.version }}
       package: ${{ steps.name.outputs.package }}
+      signed: ${{ steps.name.outputs.signed }}
+    env:
+      # Sign and notarise only on a merge to main, never on a pull request.
+      # curly is a public repository: a PR from a branch in this repo would
+      # otherwise get the Developer ID certificate handed to it.
+      # Empty when the secrets have not been added yet, in which case the
+      # build still happens, ad-hoc signed, exactly as before.
+      SIGNING: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.CURLY_CSC_LINK != '') && 'yes' || 'no' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -61,8 +69,68 @@ jobs:
             exit 1
           fi
 
+      # Same approach as product-strike's package-macos job: the certificate
+      # arrives as a base64 .p12 in a secret and is imported into a keychain
+      # that exists only for this run.
+      - name: Import the Developer ID certificate
+        if: env.SIGNING == 'yes'
+        uses: apple-actions/import-codesign-certs@v7
+        with:
+          p12-file-base64: ${{ secrets.CURLY_CSC_LINK }}
+          p12-password: ${{ secrets.CURLY_CSC_KEY_PASSWORD }}
+          keychain: curly-${{ github.run_id }}
+
+      # Read the identity out of the keychain rather than keeping the team ID
+      # in a secret of its own; there is only ever one Developer ID in there.
+      - name: Find the signing identity
+        id: identity
+        if: env.SIGNING == 'yes'
+        run: |
+          set -euo pipefail
+          name="$(security find-identity -v -p codesigning \
+            | grep 'Developer ID Application' \
+            | head -1 \
+            | sed -E 's/.*"(.*)".*/\1/')"
+          if [ -z "$name" ]; then
+            echo "::error::The imported certificate is not a Developer ID Application certificate."
+            exit 1
+          fi
+          echo "Signing as $name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
       - name: Build curly.app
-        run: make app UNIVERSAL=1
+        # An empty identity falls back to "-", which is the ad-hoc signature.
+        run: make app UNIVERSAL=1 SIGN_IDENTITY="${IDENTITY:--}"
+        env:
+          IDENTITY: ${{ steps.identity.outputs.name }}
+
+      # Notarisation uses an App Store Connect API key, like link does, rather
+      # than an Apple ID and an app-specific password.
+      - name: Notarise and staple
+        if: env.SIGNING == 'yes'
+        env:
+          APPLE_API_KEY: ${{ secrets.CURLY_APPLE_API_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.CURLY_APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.CURLY_APPLE_API_ISSUER }}
+        run: |
+          set -euo pipefail
+          key_path="$RUNNER_TEMP/AuthKey_${APPLE_API_KEY_ID}.p8"
+          printf '%s' "$APPLE_API_KEY" > "$key_path"
+          chmod 600 "$key_path"
+          trap 'rm -f "$key_path"' EXIT
+
+          # Apple wants a zip to look inside; the stapled app is zipped again
+          # afterwards for distribution.
+          ditto -c -k --keepParent curly.app "$RUNNER_TEMP/notarize.zip"
+          xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" \
+            --key "$key_path" \
+            --key-id "$APPLE_API_KEY_ID" \
+            --issuer "$APPLE_API_ISSUER" \
+            --wait --timeout 30m
+
+          # Stapling puts the ticket inside the bundle, so Gatekeeper accepts
+          # it on a machine that is offline.
+          xcrun stapler staple curly.app
 
       - name: Check the bundle looks like an app
         run: |
@@ -76,7 +144,13 @@ jobs:
           lipo -archs curly.app/Contents/MacOS/curly
           lipo -archs curly.app/Contents/MacOS/curly | grep -q arm64
           lipo -archs curly.app/Contents/MacOS/curly | grep -q x86_64
-          codesign --verify --verbose=2 curly.app
+          codesign --verify --strict --verbose=2 curly.app
+          if [ "$SIGNING" = "yes" ]; then
+            # The checks a downloader's Mac will make.
+            codesign --verify --deep --strict --verbose=2 curly.app
+            xcrun stapler validate curly.app
+            spctl --assess --type exec --verbose=4 curly.app
+          fi
 
       # Every merge to main is released, so versions are dated rather than
       # chosen by hand: 2026.11.05.42 is the 42nd CI run, built on that day.
@@ -93,7 +167,8 @@ jobs:
           fi
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "package=curly-${version}-macos" >> "$GITHUB_OUTPUT"
-          echo "Packaging as ${version}" >> "$GITHUB_STEP_SUMMARY"
+          echo "signed=${SIGNING}" >> "$GITHUB_OUTPUT"
+          echo "Packaging as ${version} (signed: ${SIGNING})" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Package curly.app
         run: |
@@ -113,6 +188,13 @@ jobs:
           codesign --verify --verbose=2 unpacked/curly.app
         env:
           PACKAGE: ${{ steps.name.outputs.package }}
+
+      # Named after this run, and deleted by that name. On an ephemeral runner
+      # it would go anyway; being exact costs nothing and matters on a
+      # self-hosted machine, where keychains otherwise pile up.
+      - name: Remove the signing keychain
+        if: always() && env.SIGNING == 'yes'
+        run: security delete-keychain "curly-${{ github.run_id }}" 2>/dev/null || true
 
       - uses: actions/upload-artifact@v4
         with:
@@ -145,6 +227,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.app.outputs.version }}
+          SIGNED: ${{ needs.app.outputs.signed }}
         run: |
           set -euo pipefail
           tag="v${VERSION}"
@@ -162,17 +245,32 @@ jobs:
           Download the `.zip` below, unzip it, and drag `curly.app` to
           Applications. Needs macOS 14 or later; the binary is universal, so it
           runs on both Apple silicon and Intel.
+          NOTES
 
-          The app is ad-hoc signed rather than notarised, so the first time you
-          open it macOS will refuse. Right-click it in the Finder and choose
-          **Open**, then confirm. Or, from a terminal:
+          # Only say the Gatekeeper bit when it is actually true of this build.
+          if [ "$SIGNED" = "yes" ]; then
+            cat >> notes.md <<'SIGNED_NOTES'
+
+          Signed with Bekind Labs' Developer ID and notarised by Apple, so it
+          opens on a double-click like anything else.
+          SIGNED_NOTES
+          else
+            cat >> notes.md <<'UNSIGNED_NOTES'
+
+          This build is ad-hoc signed rather than notarised, so the first time
+          you open it macOS will refuse. Right-click it in the Finder and
+          choose **Open**, then confirm. Or, from a terminal:
 
           ```bash
           xattr -d com.apple.quarantine /Applications/curly.app
           ```
+          UNSIGNED_NOTES
+          fi
+
+          cat >> notes.md <<'CHECKSUM_NOTES'
 
           Checksums for each file are in the matching `.sha256`.
-          NOTES
+          CHECKSUM_NOTES
 
           # Re-running a build of the same commit should refresh the release it
           # already made rather than fall over.

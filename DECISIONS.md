@@ -166,4 +166,30 @@ The alternative — a view control that does not touch the command — would mea
 the app showing you something your command would not, which is exactly the kind
 of quiet disagreement the rest of the design works to avoid.
 
+## Releases are signed and notarised; pull requests are not
+
+Release builds are signed with a Developer ID and notarised, following the
+same shape as `product-strike`'s `package-macos` job: the certificate arrives
+as a base64 `.p12` in a secret, is imported into a keychain that exists only
+for that run, and notarisation uses an App Store Connect API key rather than an
+Apple ID and an app-specific password.
+
+Two things differ, both because curly is a public repository where
+`product-strike` is not.
+
+Signing is gated on `github.event_name == 'push' && github.ref ==
+'refs/heads/main'`. Anyone can open a pull request here, and a pull request
+from a branch in this repository would otherwise be handed the certificate.
+Pull requests still build and package the app; theirs is ad-hoc signed.
+
+It runs on a GitHub-hosted `macos-latest` runner rather than a self-hosted Mac.
+Nothing about `codesign` or `notarytool` needs a particular machine — the
+certificate comes out of a secret either way — and `product-strike`'s own notes
+describe its self-hosted Mac as a laptop on a home connection that has already
+taken a release offline once.
+
+The workflow degrades rather than breaking: with no signing secrets configured
+it builds ad-hoc as before, and the release notes say which kind of build the
+reader is downloading instead of asserting one of them.
+
 ## No response history, no credential storage

@@ -20,9 +20,10 @@ Then you copy the command back out and run it in your terminal — or press
 
 macOS 14 or later · universal (Apple silicon and Intel) · ~1.8 MB · free
 
-> **First launch:** the app is ad-hoc signed, not notarised, so macOS will
-> refuse to open it on a double-click. Right-click it in the Finder and choose
-> **Open**, then confirm. See [Installing](#installing) if you'd rather not.
+> **First launch:** release builds are signed with Bekind Labs' Developer ID
+> and notarised by Apple, so they open normally. Builds made before signing was
+> set up are ad-hoc signed — for those, right-click in the Finder and choose
+> **Open**. Each release says which it is.
 
 ## The command is the point; Send is a convenience
 
@@ -102,8 +103,8 @@ quietly coming back out as `--form`.
 Download the zip from [Releases](https://github.com/Bekind-Labs/curly/releases/latest),
 unzip, drag `curly.app` to Applications. Right-click → **Open** the first time.
 
-If you'd rather not run an unnotarised binary — a reasonable position — build it
-yourself. It needs nothing but a Swift toolchain and takes well under a minute:
+Prefer to build it yourself? It needs nothing but a Swift toolchain and takes
+well under a minute:
 
 ```bash
 git clone https://github.com/Bekind-Labs/curly.git
@@ -124,6 +125,14 @@ make app    # build curly.app, ready to double-click
 `make app` wraps the binary into a bundle with an `Info.plist`, a generated
 icon and an ad-hoc signature. Add `UNIVERSAL=1` for a binary that runs on both
 Apple silicon and Intel, which is what releases use.
+
+With a Developer ID to hand you can make a distributable build locally too;
+this also turns on the hardened runtime and a trusted timestamp, which
+notarisation requires:
+
+```bash
+make app UNIVERSAL=1 SIGN_IDENTITY="Developer ID Application: … (TEAMID)"
+```
 
 `make test` needs neither macOS nor Xcode. `CurlKit` is pure Swift with no UI
 imports, so the tokenizer, parser, model and generator are testable anywhere
@@ -180,9 +189,11 @@ generator, which is most of the interesting code — is portable Swift with no U
 imports and its tests run on Linux in CI. A terminal or GTK front end would be a
 reasonable thing to build on top.
 
-**Why isn't it notarised?**
-Notarisation needs a paid Apple Developer account. If that matters to you,
-building from source is a one-liner.
+**Is it signed?**
+Release builds are signed with Bekind Labs' Developer ID and notarised by
+Apple, so Gatekeeper lets them open without ceremony. Signing happens only on
+a merge to `main` — pull request builds are ad-hoc signed, so a PR never gets
+near the certificate.
 
 **Does it phone home?**
 No analytics, no update check, no telemetry. The only requests it ever makes

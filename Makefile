@@ -7,10 +7,18 @@
 # Pass UNIVERSAL=1 to build an app that runs on both Apple silicon and Intel;
 # that is what the released build uses.
 #
+# SIGN_IDENTITY picks the signature. The default, "-", is an ad-hoc signature:
+# enough for the app to run on the machine that built it, and all a local build
+# needs. Releases pass a real Developer ID, which also turns on the hardened
+# runtime and a trusted timestamp, both of which notarisation requires:
+#
+#   make app UNIVERSAL=1 SIGN_IDENTITY="Developer ID Application: … (TEAMID)"
+#
 SWIFT ?= swift
 CONFIG ?= release
 APP := curly.app
 BUILD := build
+SIGN_IDENTITY ?= -
 
 ifeq ($(UNIVERSAL),1)
 ARCH_FLAGS := --arch arm64 --arch x86_64
@@ -42,10 +50,20 @@ app: build icon
 	cp Scripts/Info.plist $(APP)/Contents/Info.plist
 	cp $(BUILD)/AppIcon.icns $(APP)/Contents/Resources/AppIcon.icns
 	@printf 'APPL????' > $(APP)/Contents/PkgInfo
+ifeq ($(SIGN_IDENTITY),-)
 	@# Ad-hoc signature, so macOS is willing to run a locally built app.
 	@codesign --force --sign - --timestamp=none $(APP) >/dev/null 2>&1 || \
 		echo "note: could not sign $(APP); it should still run from the Finder"
-	@echo "built $(APP) — double-click it, or run: open $(APP)"
+	@echo "built $(APP) (ad-hoc signed) — double-click it, or run: open $(APP)"
+else
+	@# A real Developer ID. --options runtime and a timestamp are both required
+	@# before Apple will notarise the result. No --deep: the only thing nested
+	@# in the bundle is a resource bundle with no code in it.
+	codesign --force --options runtime --timestamp \
+		--sign "$(SIGN_IDENTITY)" $(APP)
+	codesign --verify --strict --verbose=2 $(APP)
+	@echo "built $(APP), signed as $(SIGN_IDENTITY)"
+endif
 
 run: app
 	open $(APP)
