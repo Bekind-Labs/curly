@@ -42,9 +42,11 @@ underneath, and does its best to behave exactly as curl would — it won't follo
 redirects unless the command says `-L`, and it only skips certificate checks
 when the command says `-k`, which it tells you about.
 
-How much it shows follows the same `-s`/`-i`/`-v` setting that's in the
-command, so what you asked for and what you see never drift apart. Turn it up
-and you get the whole conversation, request headers included.
+The pane has tabs for the body, the response headers, and what curly sent, so
+all of it is a click away. The `-s`/`-i`/`-v` setting in the editor controls
+what the *command* prints in a terminal, which is a different question — when
+you look at something your command wouldn't print, the pane says so and offers
+to add the flag that would.
 
 It's useful outside teaching too — any time someone hands you a forty-line
 Copy-as-cURL blob and you need to find the one header that matters.

@@ -155,16 +155,25 @@ Flags that cannot be honoured in-process — `--proxy`, `--limit-rate` and the
 like — are listed in the response pane rather than ignored. Sending is a
 convenience, and it says where it stops being faithful.
 
-## Verbosity is one setting, not two
+## Verbosity controls the command, not what the pane will let you see
 
-How much the response pane shows is not a pane preference: it reads
-`CurlRequest.verbosity`, which is a projection over curl's own `-s`, `-i` and
-`-v` flags. Choosing "Everything" in the form writes `-v` into the command, and
-a pasted command with `-v` arrives with the setting already made.
+The verbosity control writes curl's own `-s`, `-i` and `-v` into the command,
+and a pasted command carrying one of them arrives with the setting already
+made. That part was right.
 
-The alternative — a view control that does not touch the command — would mean
-the app showing you something your command would not, which is exactly the kind
-of quiet disagreement the rest of the design works to avoid.
+What was wrong was letting it also decide what the response pane would *show*.
+The reasoning at the time was that the pane should never show something the
+command would not — but the response headers came back regardless of which
+flags were set, and refusing to display them does not make the command more
+honest, it just hides data behind a setting people do not find. The person who
+asked for the verbosity control could not find the response headers behind it,
+which is as clear a verdict as that design was going to get.
+
+So the pane now has tabs — body, headers, what was sent — and all three are
+always available. The honesty is kept where it belongs: when you look at
+something your command would not print in a terminal, the pane says so and
+offers to add the flag that would. That teaches the flag instead of enforcing
+it.
 
 ## Releases are signed and notarised; pull requests are not
 
