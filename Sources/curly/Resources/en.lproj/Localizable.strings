@@ -176,6 +176,7 @@
 "response.tab.headers" = "Headers (%d)";
 "response.tab.sent" = "What was sent";
 "response.took" = "%d ms";
+"response.unsupported" = "curly sent this itself and cannot do %@. Copy the command and run it in your terminal if those matter here.";
 "row.remove" = "Remove this row";
 "row.toggle" = "Include this in the request";
 "section.auth" = "Signing in";

@@ -69,8 +69,8 @@ Copy-as-cURL blob and you need to find the one header that matters.
   with one line of plain English. Flags curly doesn't recognise are kept exactly
   as written and shown here too. Nothing is ever silently dropped.
 - **How much to show** — curl's output flags (`-s`, `-i`, `-v`) as a single
-  choice, which drives both the command and how much of the exchange the
-  response pane shows.
+  choice, so you can set how much the command prints without remembering which
+  letter does what.
 
 Nothing you type is autocorrected. macOS's curly quotes would silently stop a
 JSON body being JSON, so every automatic substitution is off; if you paste text
@@ -142,7 +142,7 @@ make app UNIVERSAL=1 SIGN_IDENTITY="Developer ID Application: … (TEAMID)"
 
 `make test` needs neither macOS nor Xcode. `CurlKit` is pure Swift with no UI
 imports, so the tokenizer, parser, model and generator are testable anywhere
-Swift runs — which is how the 95 tests run on Linux in CI.
+Swift runs — which is how the whole suite runs on Linux in CI.
 
 ## How it's put together
 

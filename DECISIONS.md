@@ -177,25 +177,21 @@ it.
 
 ## Releases are signed and notarised; pull requests are not
 
-Release builds are signed with a Developer ID and notarised, following the
-same shape as `product-strike`'s `package-macos` job: the certificate arrives
-as a base64 `.p12` in a secret, is imported into a keychain that exists only
-for that run, and notarisation uses an App Store Connect API key rather than an
-Apple ID and an app-specific password.
-
-Two things differ, both because curly is a public repository where
-`product-strike` is not.
+Release builds are signed with a Developer ID and notarised. The certificate
+arrives as a base64 `.p12` in a secret, is imported into a keychain that exists
+only for that run, and notarisation uses an App Store Connect API key rather
+than an Apple ID and an app-specific password.
 
 Signing is gated on `github.event_name == 'push' && github.ref ==
-'refs/heads/main'`. Anyone can open a pull request here, and a pull request
-from a branch in this repository would otherwise be handed the certificate.
-Pull requests still build and package the app; theirs is ad-hoc signed.
+'refs/heads/main'`. This repository is public, so anyone can open a pull
+request, and a pull request from a branch here would otherwise be handed the
+certificate. Pull requests still build and package the app; theirs is ad-hoc
+signed.
 
-It runs on a GitHub-hosted `macos-latest` runner rather than a self-hosted Mac.
-Nothing about `codesign` or `notarytool` needs a particular machine — the
-certificate comes out of a secret either way — and `product-strike`'s own notes
-describe its self-hosted Mac as a laptop on a home connection that has already
-taken a release offline once.
+It runs on a GitHub-hosted runner. Nothing about `codesign` or `notarytool`
+needs a particular machine, since the certificate comes out of a secret either
+way, and a hosted runner has no state to leak between runs and nothing to keep
+online.
 
 The workflow degrades rather than breaking: with no signing secrets configured
 it builds ad-hoc as before, and the release notes say which kind of build the

@@ -145,6 +145,22 @@ struct ResponsePane: View {
                         .foregroundStyle(.orange)
                 }
 
+                if !response.unsupportedOptions.isEmpty {
+                    Label(
+                        String(
+                            format: L(
+                                "response.unsupported",
+                                "curly sent this itself and cannot do %@. Copy the command and run it in your terminal if those matter here."
+                            ),
+                            response.unsupportedOptions.joined(separator: ", ")
+                        ),
+                        systemImage: "exclamationmark.triangle"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+
                 switch tab {
                 case .body: bodyTab(response)
                 case .headers: headersTab(response)

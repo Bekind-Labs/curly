@@ -69,9 +69,8 @@ jobs:
             exit 1
           fi
 
-      # Same approach as product-strike's package-macos job: the certificate
-      # arrives as a base64 .p12 in a secret and is imported into a keychain
-      # that exists only for this run.
+      # The certificate arrives as a base64 .p12 in a secret and is imported
+      # into a keychain that exists only for this run.
       - name: Import the Developer ID certificate
         if: env.SIGNING == 'yes'
         uses: apple-actions/import-codesign-certs@v7
@@ -189,9 +188,8 @@ jobs:
         env:
           PACKAGE: ${{ steps.name.outputs.package }}
 
-      # Named after this run, and deleted by that name. On an ephemeral runner
-      # it would go anyway; being exact costs nothing and matters on a
-      # self-hosted machine, where keychains otherwise pile up.
+      # Deleted by the name it was created with, rather than the action's
+      # default name, so nothing is left behind on any kind of runner.
       - name: Remove the signing keychain
         if: always() && env.SIGNING == 'yes'
         run: security delete-keychain "curly-${{ github.run_id }}" 2>/dev/null || true

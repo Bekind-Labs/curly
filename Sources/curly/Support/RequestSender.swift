@@ -16,6 +16,9 @@ struct SentResponse: Equatable {
     /// The request as it went out, for the verbose transcript.
     var requestTranscript: [String]
     var warnings: [String]
+    /// Flags curl would act on that curly cannot when it sends the request
+    /// itself. Shown rather than silently ignored.
+    var unsupportedOptions: [String]
 
     var isSuccess: Bool { (200..<300).contains(statusCode) }
     var isRedirect: Bool { (300..<400).contains(statusCode) }
@@ -108,7 +111,8 @@ enum RequestSender {
             duration: duration,
             finalURL: http.url?.absoluteString,
             requestTranscript: plan.requestTranscript,
-            warnings: plan.warnings
+            warnings: plan.warnings,
+            unsupportedOptions: plan.unsupportedOptions
         )
     }
 }
