@@ -34,7 +34,9 @@ jobs:
   # app bundle can be assembled.
   app:
     name: Tests and app bundle (macOS)
-    runs-on: macos-14
+    # macos-latest rather than a pinned image: pinned labels get retired, and
+    # the app only needs "a reasonably current macOS with Xcode on it".
+    runs-on: macos-latest
     outputs:
       version: ${{ steps.name.outputs.version }}
       package: ${{ steps.name.outputs.package }}
