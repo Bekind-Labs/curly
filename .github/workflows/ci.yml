@@ -2,16 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [prod]
   pull_request:
-    branches: [main]
+    branches: [prod]
   workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
-  # A run on main publishes a release, so let it finish rather than cancelling
+  # A run on prod publishes a release, so let it finish rather than cancelling
   # it half way through. Branch and PR runs are still superseded.
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/prod' }}
 
 permissions:
   contents: read
@@ -42,12 +42,12 @@ jobs:
       package: ${{ steps.name.outputs.package }}
       signed: ${{ steps.name.outputs.signed }}
     env:
-      # Sign and notarise only on a merge to main, never on a pull request.
+      # Sign and notarise only on a merge to prod, never on a pull request.
       # curly is a public repository: a PR from a branch in this repo would
       # otherwise get the Developer ID certificate handed to it.
       # Empty when the secrets have not been added yet, in which case the
       # build still happens, ad-hoc signed, exactly as before.
-      SIGNING: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.CURLY_CSC_LINK != '') && 'yes' || 'no' }}
+      SIGNING: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/prod' && secrets.CURLY_CSC_LINK != '') && 'yes' || 'no' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -151,15 +151,15 @@ jobs:
             spctl --assess --type exec --verbose=4 curly.app
           fi
 
-      # Every merge to main is released, so versions are dated rather than
+      # Every merge to prod is released, so versions are dated rather than
       # chosen by hand: 2026.11.05.42 is the 42nd CI run, built on that day.
-      # Anything that is not a merge to main is named after its commit instead
+      # Anything that is not a merge to prod is named after its commit instead
       # and never becomes a release.
       - name: Name the package
         id: name
         run: |
           set -euo pipefail
-          if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+          if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "${GITHUB_REF}" = "refs/heads/prod" ]; then
             version="$(date -u +%Y.%m.%d).${GITHUB_RUN_NUMBER}"
           else
             version="$(git rev-parse --short HEAD)"
@@ -246,11 +246,11 @@ jobs:
           echo "::error file=README.md::README.md changed but neither README.ja.md nor README.ko.md did. Update the translations (and their 'synced to' line) in the same push."
           exit 1
 
-  # Every merge to main that passes the jobs above ships: the app is published
+  # Every merge to prod that passes the jobs above ships: the app is published
   # as a GitHub release, tagged at the commit it was built from.
   release:
     name: Publish release
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/prod'
     needs: [library, app, readmes]
     runs-on: ubuntu-latest
     permissions:
